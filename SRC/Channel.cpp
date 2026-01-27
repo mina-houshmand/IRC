@@ -100,6 +100,23 @@ std::string Channel::clientChannel_list(){
 	}
 	return list;
 }
+
+/* 			two different approaches to loop through a vector:
+for (std::vector<Client>::iterator it = clients.begin(); it != clients.end(); ++it) {
+or
+for (size_t i = 0; i < this->clients.size(); i++) {
+
+in get client functions:
+Use Iterator-Based Loops When:
+		You need to modify the container (e.g., erase() or insert()).
+		You want to work directly with the container's internal structure.
+		You want to avoid manually managing indices.
+Use Index-Based Loops When:
+		You only need to access elements by their index.
+		You don't need to modify the container during iteration.
+		Simplicity and readability are more important than flexibility.
+
+*/
 Client *Channel::get_client(int fd){
 	for (std::vector<Client>::iterator it = clients.begin(); it != clients.end(); ++it){
 		if (it->GetFd() == fd)
@@ -134,7 +151,6 @@ void Channel::remove_client(int fd){
 	for (std::vector<Client>::iterator it = clients.begin(); it != clients.end(); ++it){
 		if (it->GetFd() == fd)
 			{clients.erase(it); break;}
-	}
 }
 void Channel::remove_admin(int fd){
 	for (std::vector<Client>::iterator it = admins.begin(); it != admins.end(); ++it){
@@ -170,16 +186,25 @@ bool Channel::change_adminToClient(std::string& nick){
 	return false;
 
 }
-//---------------//Methods
-//---------------//SendToAll
+
+
+
+/*
+send() -> sends data over a socket
+for each client in the channel (both admins and regular clients)
+*/
 void Channel::sendTo_all(std::string rpl1)
 {
-	for(size_t i = 0; i < admins.size(); i++)
+	for(size_t i = 0; i < admins.size(); i++){
+
+	    //rpl1.c_str() -> converts the std::string rpl1 to a C-style string (const char*), which is required by send().
 		if(send(admins[i].GetFd(), rpl1.c_str(), rpl1.size(),0) == -1)
 			std::cerr << "send() faild" << std::endl;
-	for(size_t i = 0; i < clients.size(); i++)
+	}
+	for(size_t i = 0; i < clients.size(); i++){
 		if(send(clients[i].GetFd(), rpl1.c_str(), rpl1.size(),0) == -1)
 			std::cerr << "send() faild" << std::endl;
+	}
 }
 void Channel::sendTo_all(std::string rpl1, int fd)
 {
@@ -194,4 +219,3 @@ void Channel::sendTo_all(std::string rpl1, int fd)
 				std::cerr << "send() faild" << std::endl;
 	}
 }
-//---------------//SendToAll

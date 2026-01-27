@@ -10,8 +10,8 @@ private:
 	int fd;
 	bool isOperator;
 	bool registered;
-	std::string nickname;
 	bool logedin;
+	std::string nickname;
 	std::string username;
 	std::string buffer;
 	std::string ipadd;
