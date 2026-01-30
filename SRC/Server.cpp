@@ -588,6 +588,8 @@ void Server::reciveNewData(int fd)
 		cmd = split_recivedBuffer(cli->getBuffer());
 		for(size_t i = 0; i < cmd.size(); i++)
 			this->parse_exec_cmd(cmd[i], fd);
+
+		//After processing all complete commands, the server clears the client's buffer to prepare for new incoming data.
 		if(GetClient(fd))
 			GetClient(fd)->clearBuffer();
 	}
@@ -637,11 +639,25 @@ std::vector<std::string> Server::split_cmd(std::string& cmd)
 	return vec;
 }
 
-bool Server::notregistered(int fd)
+// bool Server::notregistered(int fd)
+// {
+// 	if (!GetClient(fd) || GetClient(fd)->GetNickName().empty() || GetClient(fd)->GetUserName().empty() || GetClient(fd)->GetNickName() == "*"  || !GetClient(fd)->GetLogedIn())
+// 		return false;
+// 	return true;
+// }
+
+bool Server::isregistered(int fd)
 {
-	if (!GetClient(fd) || GetClient(fd)->GetNickName().empty() || GetClient(fd)->GetUserName().empty() || GetClient(fd)->GetNickName() == "*"  || !GetClient(fd)->GetLogedIn())
-		return false;
-	return true;
+    Client* client = GetClient(fd);
+    if (client && 
+        !client->GetNickName().empty() && 
+        !client->GetUserName().empty() && 
+        client->GetNickName() != "*" && 
+        client->GetLogedIn())
+    {
+        return true;
+    }
+    return false;
 }
 
 void Server::parse_exec_cmd(std::string &cmd, int fd)
@@ -671,37 +687,40 @@ void Server::parse_exec_cmd(std::string &cmd, int fd)
 		command[i] = std::toupper(command[i]);
 	}	
 
-	//delet splited_cmd.size()
-	if(splited_cmd.size() && (splited_cmd[0] == "BONG"))
-		return;
-    if(splited_cmd.size() && (splited_cmd[0] == "PASS" ))
-        client_authen(fd, cmd);
-	else if (splited_cmd.size() && (splited_cmd[0] == "NICK"))
-		set_nickname(cmd,fd);
-	else if(splited_cmd.size() && (splited_cmd[0] == "USER" ))
-		set_username(cmd, fd);
-	else if (splited_cmd.size() && (splited_cmd[0] == "QUIT"))
-		QUIT(cmd,fd);
-	else if(notregistered(fd))
-	{
-		if (splited_cmd.size() && (splited_cmd[0] == "KICK"))
-			KICK(cmd, fd);
-		else if (splited_cmd.size() && (splited_cmd[0] == "JOIN"))
-			JOIN(cmd, fd);
-		else if (splited_cmd.size() && (splited_cmd[0] == "TOPIC"))
-			Topic(cmd, fd);
-		else if (splited_cmd.size() && (splited_cmd[0] == "MODE"))
-			mode_command(cmd, fd);
-		else if (splited_cmd.size() && (splited_cmd[0] == "PART"))
-			PART(cmd, fd);
-		else if (splited_cmd.size() && (splited_cmd[0] == "PRIVMSG"))
-			PRIVMSG(cmd, fd);
-		else if (splited_cmd.size() && (splited_cmd[0] == "INVITE"))
-			Invite(cmd,fd);
-		else if (splited_cmd.size())
-			_sendResponse(ERR_CMDNOTFOUND(GetClient(fd)->GetNickName(),splited_cmd[0]),fd);
+	if (splited_cmd.size()){
+		if(splited_cmd[0] == "BONG")
+			return;
+		if(splited_cmd[0] == "PASS" )
+			client_authen(fd, cmd);
+		else if (splited_cmd[0] == "NICK")
+			set_nickname(cmd,fd);
+		else if(splited_cmd[0] == "USER" )
+			set_username(cmd, fd);
+		else if (splited_cmd[0] == "QUIT")
+			QUIT(cmd,fd);
+
+		//The IRC protocol requires clients to send PASS, NICK, and USER commands to register with the server.
+		//Only after successful registration can clients execute other commands.
+		else if(isregistered(fd))
+		{
+			if (splited_cmd[0] == "KICK")
+				KICK(cmd, fd);
+			else if (splited_cmd[0] == "JOIN")
+				JOIN(cmd, fd);
+			else if (splited_cmd[0] == "TOPIC")
+				Topic(cmd, fd);
+			else if (splited_cmd[0] == "MODE")
+				mode_command(cmd, fd);
+			else if (splited_cmd[0] == "PART")
+				PART(cmd, fd);
+			else if (splited_cmd[0] == "PRIVMSG")
+				PRIVMSG(cmd, fd);
+			else if (splited_cmd[0] == "INVITE")
+				Invite(cmd,fd);
+			else if (splited_cmd.size())
+				_sendResponse(ERR_CMDNOTFOUND(GetClient(fd)->GetNickName(),splited_cmd[0]),fd);
+		}
 	}
-	else if (!notregistered(fd))
+	else if (!isregistered(fd))
 		_sendResponse(ERR_NOTREGISTERED(std::string("*")),fd);
 }
-//---------------//Parsing Methods

@@ -37,6 +37,7 @@ void Server::QUIT(std::string cmd, int fd)
 	{
 		if (channels[i].get_client(fd)){
 			channels[i].remove_client(fd);
+			//i????
 			if (channels[i].GetClientsNumber() == 0)
 				channels.erase(channels.begin() + i);
 

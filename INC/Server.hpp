@@ -73,7 +73,7 @@ public:
 	//---------------//Send Methods
 	void senderror(int code, std::string clientname, int fd, std::string msg);
 	void senderror(int code, std::string clientname, std::string channelname, int fd, std::string msg);
-	void 		_sendResponse(std::string response, int fd);
+	void _sendResponse(std::string response, int fd);
 	//---------------//Close and Signal Methods
 	static void SignalHandler(int signum);
 	void close_fds();
@@ -87,23 +87,26 @@ public:
 	std::vector<std::string> split_cmd(std::string &str);
 	void parse_exec_cmd(std::string &cmd, int fd);
 	//---------------//Authentification Methods
-	bool BypassForBot(std::string cmd, int fd);
-	bool notregistered(int fd);
+	// bool BypassForBot(std::string cmd, int fd);
+	// bool notregistered(int fd);
+	bool isregistered(int fd);
 	bool nickNameInUse(std::string& nickname);
 	bool is_validNickname(std::string& nickname);
 	void client_authen(int fd, std::string pass);
 	//---------------------------//JOIN CMD
 	void	JOIN(std::string cmd, int fd);
-	int		SplitJoin(std::vector<std::pair<std::string, std::string> > &token, std::string cmd, int fd);
-	void	ExistCh(std::vector<std::pair<std::string, std::string> >&token, int i, int j, int fd);
-	void	NotExistCh(std::vector<std::pair<std::string, std::string> >&token, int i, int fd);
-	int		SearchForClients(std::string nickname);
+	bool 	TokenizeJoinCmd(std::vector<std::pair<std::string, std::string> > &token, std::string cmd, int fd);
+	void 	ProcessJoinChannel(const std::pair<std::string, std::string> &channelKeyPair, int fd);
+	void 	CreateNewChannel(const std::pair<std::string, std::string> &channelKeyPair, int fd);
+	int 	numberOfChannelsThatJoined(const std::string &nickName);
+	void 	NotifyJoin(Client *client, Channel &channel);
+
 	//---------------------------//PART CMD
 	void	PART(std::string cmd, int fd);
 	int		SplitCmdPart(std::string cmd, std::vector<std::string> &tmp, std::string &reason, int fd);
+
 	//---------------------------//CKIK CMD
 	void	KICK(std::string cmd, int fd);
-	std::string SplitCmdKick(std::string cmd, std::vector<std::string> &tmp, std::string &user, int fd);
 	//---------------------------//PRIVMSG CMD
 	void	PRIVMSG(std::string cmd, int fd);
 	void	CheckForChannels_Clients(std::vector<std::string> &tmp, int fd);

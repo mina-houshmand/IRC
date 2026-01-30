@@ -1,97 +1,131 @@
 #include "../INC/Server.hpp"
-void FindK(std::string cmd, std::string tofind, std::string &str)
-{
-	size_t i = 0;
-	for (; i < cmd.size(); i++){
-		if (cmd[i] != ' '){
-			std::string tmp;
-			for (; i < cmd.size() && cmd[i] != ' '; i++)
-				tmp += cmd[i];
-			if (tmp == tofind) break;
-			else tmp.clear();
-		}
-	}
-	if (i < cmd.size()) str = cmd.substr(i);
-	i = 0;
-	for (; i < str.size() && str[i] == ' '; i++);
-	str = str.substr(i);
-}
 
-std::string SplitCmdK(std::string &cmd, std::vector<std::string> &tmp)
-{
-	std::stringstream ss(cmd);
-	std::string str, reason;
-	int count = 3;
-	while (ss >> str && count--)
-		tmp.push_back(str);
-	if(tmp.size() != 3) return std::string("");
-	FindK(cmd, tmp[2], reason);
-	return reason;
-}
+/*
+Conditions to Check for KICK
+Command Parameters:
 
-std::string Server::SplitCmdKick(std::string cmd, std::vector<std::string> &tmp, std::string &user, int fd)
-{
-	std::string reason = SplitCmdK(cmd, tmp);
-	if (tmp.size() < 3) // check if the client send the channel name and the client to kick
-		return std::string("");
-	tmp.erase(tmp.begin());
-	std::string str = tmp[0]; std::string str1;
-	user = tmp[1]; tmp.clear();
-	for (size_t i = 0; i < str.size(); i++){//split the first string by ',' to get the channels names
-		if (str[i] == ',')
-			{tmp.push_back(str1); str1.clear();}
-		else str1 += str[i];
-	}
-	tmp.push_back(str1);
-	for (size_t i = 0; i < tmp.size(); i++)//erase the empty strings
-		{if (tmp[i].empty())tmp.erase(tmp.begin() + i--);}
-	if (reason[0] == ':') reason.erase(reason.begin());
-	else //shrink to the first space
-		{for (size_t i = 0; i < reason.size(); i++){if (reason[i] == ' '){reason = reason.substr(0, i);break;}}}
-	for (size_t i = 0; i < tmp.size(); i++){// erase the '#' from the channel name and check if the channel valid
-			if (*(tmp[i].begin()) == '#')
-				tmp[i].erase(tmp[i].begin());
-			else
-				{senderror(403, GetClient(fd)->GetNickName(), tmp[i], GetClient(fd)->GetFd(), " :No such channel\r\n"); tmp.erase(tmp.begin() + i--);}
-		}
-	return reason;
-}
+The KICK command must include at least:
+A valid channel name.
+A valid user nickname to kick.
+If these parameters are missing, respond with ERR_NEEDMOREPARAMS (461).
+Channel Existence:
+
+The specified channel must exist.
+If the channel does not exist, respond with ERR_NOSUCHCHANNEL (403).
+Client Membership:
+
+The client issuing the KICK command must be a member of the channel.
+If the client is not in the channel, respond with ERR_NOTONCHANNEL (442).
+Operator Privileges:
+
+The client issuing the KICK command must be a channel operator (admin).
+If the client is not an operator, respond with ERR_CHANOPRIVSNEEDED (482).
+Target User Membership:
+
+The user to be kicked must be a member of the channel.
+If the target user is not in the channel, respond with ERR_USERNOTINCHANNEL (441).
+Broadcast the Kick:
+
+Notify all users in the channel about the kick.
+Include the optional reason (if provided) in the notification.
+Channel Cleanup:
+
+Remove the kicked user from the channel.
+If the channel becomes empty, delete the channel.
+*/
+
 
 void	Server::KICK(std::string cmd, int fd)
 {
-	//ERR_BADCHANMASK (476) // if the channel mask is invalid
-	std::vector<std::string> tmp;
-	std::string reason ,user;
-	reason = SplitCmdKick(cmd, tmp, user, fd);
-	if (user.empty())
-		{senderror(461, GetClient(fd)->GetNickName(), GetClient(fd)->GetFd(), " :Not enough parameters\r\n"); return;}
-	for (size_t i = 0; i < tmp.size(); i++){ // search for the channel
-		if (GetChannel(tmp[i])){// check if the channel exist
-			Channel *ch = GetChannel(tmp[i]);
-			if (!ch->get_client(fd) && !ch->get_admin(fd)) // check if the client is in the channel
-				{senderror(442, GetClient(fd)->GetNickName(), "#" + tmp[i], GetClient(fd)->GetFd(), " :You're not on that channel\r\n"); continue;}
-			if(ch->get_admin(fd)){ // check if the client is admin
-				if (ch->GetClientInChannel(user)){ // check if the client to kick is in the channel
-					std::stringstream ss;
-					ss << ":" << GetClient(fd)->GetNickName() << "!~" << GetClient(fd)->GetUserName() << "@" << "localhost" << " KICK #" << tmp[i] << " " << user;
-					if (!reason.empty())
-						ss << " :" << reason << "\r\n";
-					else ss << "\r\n";
-					ch->sendTo_all(ss.str());
-					if (ch->get_admin(ch->GetClientInChannel(user)->GetFd()))
-						ch->remove_admin(ch->GetClientInChannel(user)->GetFd());
-					else
-						ch->remove_client(ch->GetClientInChannel(user)->GetFd());
-					if (ch->GetClientsNumber() == 0)
-						channels.erase(channels.begin() + i);
-				}
-				else // if the client to kick is not in the channel
-					{senderror(441, GetClient(fd)->GetNickName(), "#" + tmp[i], GetClient(fd)->GetFd(), " :They aren't on that channel\r\n"); continue;}
-			}
-			else // if the client is not admin
-				{senderror(482, GetClient(fd)->GetNickName(), "#" + tmp[i], GetClient(fd)->GetFd(), " :You're not channel operator\r\n"); continue;}
-		}
-		else // if the channel doesn't exist
-			senderror(403, GetClient(fd)->GetNickName(), "#" + tmp[i], GetClient(fd)->GetFd(), " :No such channel\r\n");
+	/*1-Command Parameters:
+		The KICK command must include at least:
+			A valid channel name.
+			A valid user nickname to kick.
+	*/
+	std::vector<std::string> cmd_tokens = split_cmd(cmd);
+	// Ensure we have at least <channel>, <user>, and optional <reason>
+    if (cmd_tokens.size() < 3) { 
+        senderror(461, GetClient(fd)->GetNickName(), GetClient(fd)->GetFd(), " :Not enough parameters\r\n");
+        return;
+    }
+
+	//2- channel Existence:
+
+	std::string channelName = cmd_tokens[1];
+    std::string targetUser = cmd_tokens[2];
+	/*
+	cmd.find(targetUser) finds the position of the target user in the command string.
+	targetUser.size() adds the length of the target user's nickname to get the position just after the nickname.
+	Adding + 1 skips the space after the nickname.
+	*/
+    std::string reason = (cmd_tokens.size() > 3) ? cmd.substr(cmd.find(targetUser) + targetUser.size() + 1) : ":No reason provided";
+    // Ensure the reason starts with ':'
+    if (!reason.empty() && reason[0] != ':') {
+        reason.insert(reason.begin(), ':');
+    }
+
+    // Check if the channel exists
+    Channel *channel = GetChannel(channelName);
+    if (!channel) {
+        senderror(403, GetClient(fd)->GetNickName(), channelName, GetClient(fd)->GetFd(), " :No such channel\r\n");
+        //OR
+		//senderror(403, GetClient(fd)->GetNickName(), "#" + tmp[i], GetClient(fd)->GetFd(), " :No such channel\r\n");
+		return;
+    }
+
+	// Check if the client issuing the command is in the channel
+    if (!channel->get_client(fd) && !channel->get_admin(fd)) {
+        senderror(442, GetClient(fd)->GetNickName(), channelName, GetClient(fd)->GetFd(), " :You're not on that channel\r\n");
+        return;
+    }
+
+    // Check if the client issuing the command is an admin
+    if (!channel->get_admin(fd)) {
+        senderror(482, GetClient(fd)->GetNickName(), channelName, GetClient(fd)->GetFd(), " :You're not channel operator\r\n");
+        //OR 
+		//{senderror(482, GetClient(fd)->GetNickName(), "#" + tmp[i], GetClient(fd)->GetFd(), " :You're not channel operator\r\n"); continue;}
+
+		return;
+    }
+
+	// Check if the target user is in the channel
+    if (!channel->GetClientInChannel(targetUser)) {
+        senderror(441, GetClient(fd)->GetNickName(), channelName, GetClient(fd)->GetFd(), " :They aren't on that channel\r\n");
+		// OR
+		//{senderror(441, GetClient(fd)->GetNickName(), "#" + tmp[i], GetClient(fd)->GetFd(), " :They aren't on that channel\r\n"); continue;}
+
+        return;
+    }
+
+	/*until here we checked if :
+	1- the channel is valid
+	2- the client has the right to kick
+	3-and the other client is in the channel
+	*/
+
+	// Broadcast the kick to all users in the channel
+    std::stringstream ss;
+    ss << ":" << GetClient(fd)->GetNickName() << "!~" << GetClient(fd)->GetUserName() << "@localhost KICK " << channelName << " " << targetUser << " " << reason << "\r\n";
+	if (!reason.empty())
+		ss << " :" << reason << "\r\n";
+	channel->sendTo_all(ss.str());
+
+	// Remove the target user from the channel
+	/* 			channel->GetClientInChannel(targetUser)
+	here we pass the target users name and find if it is in the channal and it returns the 
+	clients object and then we get its fd 
+	and then pass that fd to the get_admin to check if it is admin or client
+	then remove it
+	*/
+	if (channel->get_admin(channel->GetClientInChannel(targetUser)->GetFd()))
+		channel->remove_admin(channel->GetClientInChannel(targetUser)->GetFd());
+	else
+		channel->remove_client(channel->GetClientInChannel(targetUser)->GetFd());
+
+    // If the channel is empty, delete it
+    if (channel->GetClientsNumber() == 0) {
+		RemoveChannel(channelName);
+
 	}
+
 }
