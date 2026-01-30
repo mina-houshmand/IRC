@@ -63,6 +63,11 @@ void Server::AddChannel(Channel newChannel){this->channels.push_back(newChannel)
 void Server::AddFds(pollfd newFd){this->fds.push_back(newFd);}
 //---------------//Setters
 //---------------//Remove Methods
+
+//This method is responsible for removing a client from the server entirely.
+//It iterates through the clients vector of the Server object.
+//if is found, it removes the client from the server's global list of clients.
+
 void Server::RemoveClient(int fd){
 	for (size_t i = 0; i < this->clients.size(); i++){
 		if (this->clients[i].GetFd() == fd)
@@ -137,6 +142,7 @@ void Server::senderror(int code, std::string clientname, std::string channelname
 
 void Server::_sendResponse(std::string response, int fd)
 {
+	//send() sends the response string to the client identified by the file descriptor fd.
 	if(send(fd, response.c_str(), response.size(), 0) == -1)
 		std::cerr << "Response send() faild" << std::endl;
 }
@@ -568,9 +574,17 @@ void Server::reciveNewData(int fd)
 	}
 	else
 	{ 
+		//the std::string constructor is automatically called to convert the char[] into a std::string.
+		//std::string(const char* s); SO we can pass char[] to setBuffer
 		cli->setBuffer(buff);
+
+		//\r\n  to detect the end of a command sent by the client.
+		//The IRC protocol specifies that commands must end with \r\n.
+		//If the buffer does not contain \r\n, the server assumes the command is incomplete and waits for more data.
 		if(cli->getBuffer().find_first_of("\r\n") == std::string::npos)
 			return;
+
+		
 		cmd = split_recivedBuffer(cli->getBuffer());
 		for(size_t i = 0; i < cmd.size(); i++)
 			this->parse_exec_cmd(cmd[i], fd);
@@ -585,11 +599,19 @@ std::vector<std::string> Server::split_recivedBuffer(std::string str)
 	std::vector<std::string> vec;
 	std::istringstream stm(str);
 	std::string line;
+
+	//reads each line from the input stream (stm) into the variable line
+	/*
+	example:	 "NICK John\r\nUSER johnd 0 * :John Doe\r\nJOIN #channel1\r\n"
+	store it like this:
+			vec = {"NICK John", "USER johnd 0 * :John Doe", "JOIN #channel1"};
+	*/
 	while(std::getline(stm, line))
 	{
+		//find the position of the first occurrence of either '\r' or '\n' in the line
 		size_t pos = line.find_first_of("\r\n");
 		if(pos != std::string::npos)
-			line = line.substr(0, pos);
+			line = line.substr(0, pos); //For each line, it removes the \r\n
 		vec.push_back(line);
 	}
 	return vec;
@@ -600,6 +622,13 @@ std::vector<std::string> Server::split_cmd(std::string& cmd)
 	std::vector<std::string> vec;
 	std::istringstream stm(cmd);
 	std::string token;
+
+	/*     stm >> token
+	This code splits the input string (cmd) into individual tokens (words) based on whitespace and stores them in a vector (vec).
+	The >> operator reads from the stream until it encounters a whitespace character (space, tab, newline, etc.).
+	After extracting the token, the stream's internal pointer moves to the next word.
+	The loop continues until the end of the stream is reached.
+	*/
 	while(stm >> token)
 	{
 		vec.push_back(token);
@@ -619,35 +648,55 @@ void Server::parse_exec_cmd(std::string &cmd, int fd)
 {
 	if(cmd.empty())
 		return ;
+	
+	//separates the command string into individual words/tokens based on whitespace
 	std::vector<std::string> splited_cmd = split_cmd(cmd);
+
+	//returns the index of the first character in cmd that is not one of the characters in the string " \t\v".
 	size_t found = cmd.find_first_not_of(" \t\v");
+
+	/*
+	The substr method creates a substring of cmd starting from the index found.
+	This removes all leading whitespace characters from cmd.
+	*/
 	if(found != std::string::npos)
 		cmd = cmd.substr(found);
-	if(splited_cmd.size() && (splited_cmd[0] == "BONG" || splited_cmd[0] == "bong"))
+
+	//mina did this
+	if (splited_cmd.empty())
 		return;
-    if(splited_cmd.size() && (splited_cmd[0] == "PASS" || splited_cmd[0] == "pass"))
+
+	std::string command = splited_cmd[0];
+	for (size_t i = 0; i < command.size(); ++i) {
+		command[i] = std::toupper(command[i]);
+	}	
+
+	//delet splited_cmd.size()
+	if(splited_cmd.size() && (splited_cmd[0] == "BONG"))
+		return;
+    if(splited_cmd.size() && (splited_cmd[0] == "PASS" ))
         client_authen(fd, cmd);
-	else if (splited_cmd.size() && (splited_cmd[0] == "NICK" || splited_cmd[0] == "nick"))
+	else if (splited_cmd.size() && (splited_cmd[0] == "NICK"))
 		set_nickname(cmd,fd);
-	else if(splited_cmd.size() && (splited_cmd[0] == "USER" || splited_cmd[0] == "user"))
+	else if(splited_cmd.size() && (splited_cmd[0] == "USER" ))
 		set_username(cmd, fd);
-	else if (splited_cmd.size() && (splited_cmd[0] == "QUIT" || splited_cmd[0] == "quit"))
+	else if (splited_cmd.size() && (splited_cmd[0] == "QUIT"))
 		QUIT(cmd,fd);
 	else if(notregistered(fd))
 	{
-		if (splited_cmd.size() && (splited_cmd[0] == "KICK" || splited_cmd[0] == "kick"))
+		if (splited_cmd.size() && (splited_cmd[0] == "KICK"))
 			KICK(cmd, fd);
-		else if (splited_cmd.size() && (splited_cmd[0] == "JOIN" || splited_cmd[0] == "join"))
+		else if (splited_cmd.size() && (splited_cmd[0] == "JOIN"))
 			JOIN(cmd, fd);
-		else if (splited_cmd.size() && (splited_cmd[0] == "TOPIC" || splited_cmd[0] == "topic"))
+		else if (splited_cmd.size() && (splited_cmd[0] == "TOPIC"))
 			Topic(cmd, fd);
-		else if (splited_cmd.size() && (splited_cmd[0] == "MODE" || splited_cmd[0] == "mode"))
+		else if (splited_cmd.size() && (splited_cmd[0] == "MODE"))
 			mode_command(cmd, fd);
-		else if (splited_cmd.size() && (splited_cmd[0] == "PART" || splited_cmd[0] == "part"))
+		else if (splited_cmd.size() && (splited_cmd[0] == "PART"))
 			PART(cmd, fd);
-		else if (splited_cmd.size() && (splited_cmd[0] == "PRIVMSG" || splited_cmd[0] == "privmsg"))
+		else if (splited_cmd.size() && (splited_cmd[0] == "PRIVMSG"))
 			PRIVMSG(cmd, fd);
-		else if (splited_cmd.size() && (splited_cmd[0] == "INVITE" || splited_cmd[0] == "invite"))
+		else if (splited_cmd.size() && (splited_cmd[0] == "INVITE"))
 			Invite(cmd,fd);
 		else if (splited_cmd.size())
 			_sendResponse(ERR_CMDNOTFOUND(GetClient(fd)->GetNickName(),splited_cmd[0]),fd);

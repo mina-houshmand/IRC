@@ -147,10 +147,16 @@ Client* Channel::GetClientInChannel(std::string name)
 //---------------//Methods
 void Channel::add_client(Client newClient){clients.push_back(newClient);}
 void Channel::add_admin(Client newClient){admins.push_back(newClient);}
+
+// This method is removing a client from a specific channel.
+// it iterates through the clients vector of a specific Channel object.
+// if it found, it removes the client from the clients vector of that channel.
+
 void Channel::remove_client(int fd){
 	for (std::vector<Client>::iterator it = clients.begin(); it != clients.end(); ++it){
 		if (it->GetFd() == fd)
 			{clients.erase(it); break;}
+	}
 }
 void Channel::remove_admin(int fd){
 	for (std::vector<Client>::iterator it = admins.begin(); it != admins.end(); ++it){
