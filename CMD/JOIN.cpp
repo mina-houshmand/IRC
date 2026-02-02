@@ -76,23 +76,28 @@ int Server::numberOfChannelsThatJoined(const std::string &nickName) {
 }
 
 void Server::CreateNewChannel(const std::pair<std::string, std::string> &channelKeyPair, int fd) {
-    const std::string &channelName = channelKeyPair.first;
+    std::string channelName = channelKeyPair.first;
     Client *client = GetClient(fd);
 
-    // Step 1: Check if the client is already in 10 channels
+    // Step 1: Strip the # or & from the channel name if present
+    if (!channelName.empty() && (channelName[0] == '#' || channelName[0] == '&')) {
+        channelName = channelName.substr(1);
+    }
+
+    // Step 2: Check if the client is already in 10 channels
     if (numberOfChannelsThatJoined(client->GetNickName()) >= 10) {
         senderror(405, client->GetNickName(), client->GetFd(), " :You have joined too many channels\r\n");
         return;
     }
 
-    // Step 2: Create the channel
+    // Step 3: Create the channel
     Channel newChannel;
     newChannel.SetName(channelName); // Set the channel name
     newChannel.add_admin(*client);   // Make the client the channel operator
     newChannel.set_createiontime();  // Set the creation time
     this->channels.push_back(newChannel); // Add the channel to the server's list of channels
 
-    // Step 3: Notify the client
+    // Step 4: Notify the client
     NotifyJoin(client, newChannel);
 }
 

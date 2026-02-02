@@ -169,7 +169,7 @@ void	Server::close_fds(){
 //---------------//Close and Signal Methods
 //---------------//Server Methods
 //Initializes the server and runs the main event loop until a signal tells it to stop
-//socket is like a phon when you wanna call s.o
+//socket is like a phone when you wanna call s.o
 void Server::init(int port, std::string pass)
 {
 	this->password = pass;
