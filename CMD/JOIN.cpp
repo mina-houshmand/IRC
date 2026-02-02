@@ -30,6 +30,8 @@ Notify all users in the channel that the client has joined.
 Send the channel topic (if set) and the list of users to the joining client.
 */
 
+
+
 void Server::NotifyJoin(Client *client, Channel &channel) {
     // Step 1: Send JOIN message to the client
     _sendResponse(
@@ -94,10 +96,66 @@ void Server::CreateNewChannel(const std::pair<std::string, std::string> &channel
     NotifyJoin(client, newChannel);
 }
 
+// Handle joining an existing channel
+// Validates: password, invite-only status, user limit, and prevents duplicate joins
+void Server::HandleExistingChannel(const std::pair<std::string, std::string> &channelKeyPair, size_t channelIndex, int fd) {
+    const std::string &channelName = channelKeyPair.first;
+    const std::string &key = channelKeyPair.second;
+    Channel &channel = this->channels[channelIndex];
+    Client *client = GetClient(fd);
+    std::string clientNick = client->GetNickName();
+
+
+    if (!client) {
+        return;
+    }
+
+
+    // Step 1: Check if the client is already in the channel
+    if (channel.clientInChannel(clientNick)) {
+        return;
+    }
+
+    // Step 2: Validate channel password if the channel is password-protected
+    // if channel has a key ?!
+    if (channel.GetKey() == 1) { 
+        if (key != channel.GetPassword()) {
+            senderror(475, clientNick, channelName, fd, " :Cannot join channel (+k)\r\n");
+            return;
+        }
+    }
+
+    // Step 3: Check if the channel is invite-only
+    if (channel.GetInvitOnly() == 1) {
+        std::string channelNameCopy = channelName;
+        if (!client->GetInviteChannel(channelNameCopy)) {
+            // Client is not invited
+            senderror(473, clientNick, channelName, fd, " :Cannot join channel (+i)\r\n");
+            return;
+        }
+        // Remove the invitation after successfully joining
+        client->RmChannelInvite(channelNameCopy);
+    }
+
+    // Step 4: Check if the channel has a user limit
+    if (channel.GetLimit() > 0) {  // Channel has a user limit
+        if (channel.GetClientsNumber() >= channel.GetLimit()) {
+            // Channel is full
+            senderror(471, clientNick, channelName, fd, " :Cannot join channel (+l)\r\n");
+            return;
+        }
+    }
+
+    // Step 5: All validations passed - add the client to the channel
+    channel.add_client(*client);
+
+    // Step 6: Notify the client and broadcast to all users in the channel
+    NotifyJoin(client, channel);
+}
+
 //check if the channel exists or not
 void Server::ProcessJoinChannel(const std::pair<std::string, std::string> &channelKeyPair, int fd) {
     const std::string &channelName = channelKeyPair.first;
-    const std::string &key = channelKeyPair.second;
 
     // Check if the channel already exists
     for (size_t j = 0; j < this->channels.size(); j++) {

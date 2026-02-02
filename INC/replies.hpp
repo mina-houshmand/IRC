@@ -30,3 +30,6 @@
 #define ERR_ERRONEUSNICK(nickname) (": 432 " + nickname + " :Erroneus nickname" + CRLF)
 #define ERR_NOTREGISTERED(nickname) (": 451 " + nickname + " :You have not registered!" + CRLF)
 #define ERR_CMDNOTFOUND(nickname, command) (": 421 " + nickname + " " + command + " :Unknown command" + CRLF)
+#define ERR_BADCHANNELKEY(nickname, channelname) (": 475 " + nickname + " " + channelname + " :Cannot join channel (+k)" + CRLF)
+#define ERR_INVITEONLYCHAN(nickname, channelname) (": 473 " + nickname + " " + channelname + " :Cannot join channel (+i)" + CRLF)
+#define ERR_CHANNELISFULL(nickname, channelname) (": 471 " + nickname + " " + channelname + " :Cannot join channel (+l)" + CRLF)

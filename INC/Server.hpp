@@ -98,6 +98,7 @@ public:
 	bool 	TokenizeJoinCmd(std::vector<std::pair<std::string, std::string> > &token, std::string cmd, int fd);
 	void 	ProcessJoinChannel(const std::pair<std::string, std::string> &channelKeyPair, int fd);
 	void 	CreateNewChannel(const std::pair<std::string, std::string> &channelKeyPair, int fd);
+	void 	HandleExistingChannel(const std::pair<std::string, std::string> &channelKeyPair, size_t channelIndex, int fd);
 	int 	numberOfChannelsThatJoined(const std::string &nickName);
 	void 	NotifyJoin(Client *client, Channel &channel);
 

@@ -103,11 +103,12 @@ static std::string ft_toLower(std::string str)
 bool Server::nickNameInUse(std::string& nickname)
 {
 	std::string client_nickname;
+	std::string lowercase_nickname = ft_toLower(nickname);
 
 	for (size_t i = 0; i < this->clients.size(); i++)
 	{
 		client_nickname = ft_toLower(this->clients[i].GetNickName());
-		if (client_nickname == nickname)
+		if (client_nickname == lowercase_nickname)
 			return true;
 	}
 	return false;
@@ -140,7 +141,7 @@ void Server::set_nickname(std::string cmd, int fd)
 	//if nick name is used we put * as a nickname temporary
 	//to nsures that the client always has some identifier
 	//otherwise it could cause issues in other commands that rely on the nickname	
-	if (nickNameInUse(new_nickname) || new_nickname != old_nickname){
+	if (nickNameInUse(new_nickname) && new_nickname != old_nickname){
 		if(cli->GetNickName().empty()){
 			cli->SetNickname(temo_nickname);
 		}
