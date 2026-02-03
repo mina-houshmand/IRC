@@ -1,4 +1,5 @@
 #include "../INC/Server.hpp"
+#include <iostream>
 
 bool Server::isBotfull = false;
 Server::Server(){this->server_fdsocket = -1;}
@@ -686,36 +687,37 @@ void Server::parse_exec_cmd(std::string &cmd, int fd)
 	for (size_t i = 0; i < command.size(); ++i) {
 		command[i] = std::toupper(command[i]);
 	}	
+	std::cout << "Received command from Client <" << fd << ">: " << command << std::endl;
 
 	if (splited_cmd.size()){
-		if(splited_cmd[0] == "BONG")
+		if(command == "BONG")
 			return;
-		if(splited_cmd[0] == "PASS" )
+		if(command == "PASS" )
 			client_authen(fd, cmd);
-		else if (splited_cmd[0] == "NICK")
+		else if (command == "NICK")
 			set_nickname(cmd,fd);
-		else if(splited_cmd[0] == "USER" )
+		else if(command == "USER" )
 			set_username(cmd, fd);
-		else if (splited_cmd[0] == "QUIT")
+		else if (command == "QUIT")
 			QUIT(cmd,fd);
 
 		//The IRC protocol requires clients to send PASS, NICK, and USER commands to register with the server.
 		//Only after successful registration can clients execute other commands.
 		else if(isregistered(fd))
 		{
-			if (splited_cmd[0] == "KICK")
+			if (command == "KICK")
 				KICK(cmd, fd);
-			else if (splited_cmd[0] == "JOIN")
+			else if (command == "JOIN")
 				JOIN(cmd, fd);
-			else if (splited_cmd[0] == "TOPIC")
+			else if (command == "TOPIC")
 				Topic(cmd, fd);
-			else if (splited_cmd[0] == "MODE")
+			else if (command == "MODE")
 				mode_command(cmd, fd);
-			else if (splited_cmd[0] == "PART")
+			else if (command == "PART")
 				PART(cmd, fd);
-			else if (splited_cmd[0] == "PRIVMSG")
+			else if (command == "PRIVMSG")
 				PRIVMSG(cmd, fd);
-			else if (splited_cmd[0] == "INVITE")
+			else if (command == "INVITE")
 				Invite(cmd,fd);
 			else if (splited_cmd.size())
 				_sendResponse(ERR_CMDNOTFOUND(GetClient(fd)->GetNickName(),splited_cmd[0]),fd);

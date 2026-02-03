@@ -12,6 +12,7 @@
 #define RPL_NAMREPLY(nickname, channelname, clientslist) (": 353 " + nickname + " @ #" + channelname + " :" + clientslist + CRLF)
 #define RPL_ENDOFNAMES(nickname, channelname) (": 366 " + nickname + " #" + channelname + " :END of /NAMES list" + CRLF)
 #define RPL_TOPICIS(nickname, channelname, topic) (": 332 " + nickname + " #" +channelname + " :" + topic + "\r\n")
+#define RPL_NAMECHANGE(oldnickname, newnickname, channelname) (":" + oldnickname + " NICK " + newnickname + " #" + channelname + CRLF)
 
 ///////// ERRORS ////////////////
 #define ERR_ERRONEUSUSERNAME(username) (": 432 " + username + " :Erroneous username")
@@ -33,3 +34,5 @@
 #define ERR_BADCHANNELKEY(nickname, channelname) (": 475 " + nickname + " " + channelname + " :Cannot join channel (+k)" + CRLF)
 #define ERR_INVITEONLYCHAN(nickname, channelname) (": 473 " + nickname + " " + channelname + " :Cannot join channel (+i)" + CRLF)
 #define ERR_CHANNELISFULL(nickname, channelname) (": 471 " + nickname + " " + channelname + " :Cannot join channel (+l)" + CRLF)
+#define ERR_NOTENOUGHPARAMNAME(username) (": 461 " + username + " :Not enough parameters." + CRLF)
+#define ERR_USERONCHANNEL(nickname, channelname) (": 443 " + nickname + " #" + channelname + " :is already on channel" + CRLF)
