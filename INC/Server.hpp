@@ -102,6 +102,8 @@ public:
 	int 	numberOfChannelsThatJoined(const std::string &nickName);
 	void 	NotifyJoin(Client *client, Channel &channel);
 
+	//---------------------------//HELP CMD
+	void	HELP(int fd);
 	//---------------------------//PART CMD
 	void	PART(std::string cmd, int fd);
 	int		SplitCmdPart(std::string cmd, std::vector<std::string> &tmp, std::string &reason, int fd);

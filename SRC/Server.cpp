@@ -698,6 +698,8 @@ void Server::parse_exec_cmd(std::string &cmd, int fd)
 			set_nickname(cmd,fd);
 		else if(command == "USER" )
 			set_username(cmd, fd);
+		else if (command == "HELP")
+			HELP(fd);
 		else if (command == "QUIT")
 			QUIT(cmd,fd);
 

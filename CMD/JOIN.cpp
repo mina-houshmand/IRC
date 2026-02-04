@@ -1,4 +1,5 @@
 #include "../INC/Server.hpp"
+#include <iostream>
 
 /*
 IRC Rules to Check in ProcessJoinChannel
@@ -161,10 +162,13 @@ void Server::HandleExistingChannel(const std::pair<std::string, std::string> &ch
 //check if the channel exists or not
 void Server::ProcessJoinChannel(const std::pair<std::string, std::string> &channelKeyPair, int fd) {
     const std::string &channelName = channelKeyPair.first;
+    std::string normalizedName = channelName;
+    if (!normalizedName.empty() && (normalizedName[0] == '#' || normalizedName[0] == '&'))
+        normalizedName = normalizedName.substr(1);
 
-    // Check if the channel already exists
+    // Check if the channel already exists (compare against stored names without prefix)
     for (size_t j = 0; j < this->channels.size(); j++) {
-        if (this->channels[j].GetName() == channelName) {
+        if (this->channels[j].GetName() == normalizedName) {
             HandleExistingChannel(channelKeyPair, j, fd);
             return;
         }
@@ -331,6 +335,16 @@ void Server::JOIN(std::string cmd, int fd)
 		token[1] = {"#channel2", "key2"};
 		token[2] = {"#channel3", "key3"};
 	*/
+    std::cout << "Processing JOIN command from Client <" << fd << ">: " << cmd << std::endl;
+    std::cout << "Client Count: " << this->clients.size() << std::endl;
+    for (size_t i = 0; i < this->clients.size(); i++) {
+        std::cout << "Notifying Client <" << this->clients[i].GetFd() << "> about joining channel #" << "." << std::endl;
+        if (this->clients[i].GetFd() == GetClient(fd)->GetFd()) {
+            break;
+        }
+    }
+
+    _sendResponse(RPL_JOINMSG(GetClient(fd)->getHostname(), GetClient(fd)->getIpAdd(), "test "), fd); // Test line to verify JOIN command processing
 	std::vector<std::pair<std::string, std::string> > token;
 	if (!TokenizeJoinCmd(token, cmd, fd)) {
         senderror(461, GetClient(fd)->GetNickName(), GetClient(fd)->GetFd(), " :Not enough parameters\r\n");

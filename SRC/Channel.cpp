@@ -1,4 +1,7 @@
 #include "../INC/Channel.hpp"
+#include <iostream>
+#include <cerrno>
+#include <cstring>
 
 Channel::Channel(){
 	this->invit_only = 0;
@@ -201,25 +204,28 @@ for each client in the channel (both admins and regular clients)
 */
 void Channel::sendTo_all(std::string rpl1)
 {
-	for(size_t i = 0; i < admins.size(); i++){
 
-	    //rpl1.c_str() -> converts the std::string rpl1 to a C-style string (const char*), which is required by send().
+	for(size_t i = 0; i < admins.size(); i++){
+		std::cout << "sendTo_all -> Admin FD: " << admins[i].GetFd() << " msg_len: " << rpl1.size() << std::endl;
 		if(send(admins[i].GetFd(), rpl1.c_str(), rpl1.size(),0) == -1)
-			std::cerr << "send() faild" << std::endl;
+			std::cerr << "send() failed (fd=" << admins[i].GetFd() << "): " << std::strerror(errno) << std::endl;
 	}
 	for(size_t i = 0; i < clients.size(); i++){
+		std::cout << "sendTo_all -> Client FD: " << clients[i].GetFd() << " msg_len: " << rpl1.size() << std::endl;
 		if(send(clients[i].GetFd(), rpl1.c_str(), rpl1.size(),0) == -1)
-			std::cerr << "send() faild" << std::endl;
+			std::cerr << "send() failed (fd=" << clients[i].GetFd() << "): " << std::strerror(errno) << std::endl;
 	}
 }
 void Channel::sendTo_all(std::string rpl1, int fd)
 {
 	for(size_t i = 0; i < admins.size(); i++){
+		std::cout << "Client FD: " << admins[i].GetFd() << ", Excluded FD: " << fd << std::endl;
 		if(admins[i].GetFd() != fd)
 			if(send(admins[i].GetFd(), rpl1.c_str(), rpl1.size(),0) == -1)
 				std::cerr << "send() faild" << std::endl;
 	}
 	for(size_t i = 0; i < clients.size(); i++){
+		std::cout << "Client FD: " << clients[i].GetFd() << ", Excluded FD: " << fd << std::endl;
 		if(clients[i].GetFd() != fd)
 			if(send(clients[i].GetFd(), rpl1.c_str(), rpl1.size(),0) == -1)
 				std::cerr << "send() faild" << std::endl;
