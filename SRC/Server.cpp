@@ -688,7 +688,7 @@ void Server::parse_exec_cmd(std::string &cmd, int fd)
 		command[i] = std::toupper(command[i]);
 	}	
 	std::cout << "Received command from Client <" << fd << ">: " << command << std::endl;
-
+	std::cout << "Full command: (for debugging) " << cmd << std::endl;
 	if (splited_cmd.size()){
 		if(command == "BONG")
 			return;
