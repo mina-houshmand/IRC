@@ -1,8 +1,11 @@
 #ifndef CLIENT_HPP
 #define CLIENT_HPP
 
-#include "Server.hpp"
-#include "Channel.hpp"
+#include <string>
+#include <vector>
+
+class Server;
+class Channel;
 
 class Client
 {

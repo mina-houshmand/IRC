@@ -2,13 +2,12 @@
 #define CHANNEL_HPP
 
 #include "Client.hpp"
-#include "Server.hpp"
 
 class Client;
 class Channel
 {
 private:
-
+	
 	int invit_only;
 	int topic;
 	int key;

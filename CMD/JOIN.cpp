@@ -100,6 +100,7 @@ void Server::CreateNewChannel(const std::pair<std::string, std::string> &channel
 
     // Step 4: Notify the client
     NotifyJoin(client, newChannel);
+    std::cout << "DEBUG: IsUserAdmin: " << this->channels.back().get_admin(fd) << std::endl;
 }
 
 // Handle joining an existing channel
@@ -157,6 +158,7 @@ void Server::HandleExistingChannel(const std::pair<std::string, std::string> &ch
 
     // Step 6: Notify the client and broadcast to all users in the channel
     NotifyJoin(client, channel);
+        std::cout << "DEBUG: IsUserAdmin: " << channel.get_admin(fd) << std::endl;
 }
 
 //check if the channel exists or not
@@ -176,6 +178,8 @@ void Server::ProcessJoinChannel(const std::pair<std::string, std::string> &chann
 
     // If the channel does not exist, create it
     CreateNewChannel(channelKeyPair, fd);
+
+
 }
 
 // Process a single channel (either existing or new)
@@ -337,28 +341,29 @@ void Server::JOIN(std::string cmd, int fd)
 	*/
     std::cout << "Processing JOIN command from Client <" << fd << ">: " << cmd << std::endl;
     std::cout << "Client Count: " << this->clients.size() << std::endl;
+//    std::cout << "Is Client an Admin? " << (? "Yes" : "No") << std::endl;
     for (size_t i = 0; i < this->clients.size(); i++) {
-        std::cout << "Notifying Client <" << this->clients[i].GetFd() << "> about joining channel #" << "." << std::endl;
         if (this->clients[i].GetFd() == GetClient(fd)->GetFd()) {
             break;
         }
     }
-
+    
     _sendResponse(RPL_JOINMSG(GetClient(fd)->getHostname(), GetClient(fd)->getIpAdd(), "test "), fd); // Test line to verify JOIN command processing
 	std::vector<std::pair<std::string, std::string> > token;
 	if (!TokenizeJoinCmd(token, cmd, fd)) {
         senderror(461, GetClient(fd)->GetNickName(), GetClient(fd)->GetFd(), " :Not enough parameters\r\n");
         return;
     }
-
+    
 	// Step 2: Check if the client is trying to join more than 10 channels
 	if (token.size() > 10) {
-		senderror(407, GetClient(fd)->GetNickName(), GetClient(fd)->GetFd(), " :Too many channels\r\n"); 
+        senderror(407, GetClient(fd)->GetNickName(), GetClient(fd)->GetFd(), " :Too many channels\r\n"); 
 		return;
 	}
 	
 	// Step 3: Process each channel
     for (size_t i = 0; i < token.size(); i++) {
+        std::cout << "Notifying Client <" << this->clients[i].GetFd() << "> about joining channel #" << token[i].first << std::endl;
         ProcessJoinChannel(token[i], fd);
     }
 	

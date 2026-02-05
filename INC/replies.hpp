@@ -2,7 +2,8 @@
 
 #define CRLF "\r\n"
 
-#define RPL_CONNECTED(nickname) (": 001 " + nickname + " : Welcome to the IRC server!" + CRLF)
+#define RPL_CONNECTED(nickname, username, hostname) (": 001 " + nickname + " : Welcome to the IRC server!" + username + "@" + hostname + CRLF)
+#define RPL_CREATED() (": 003 :This server was created on " + std::string(__DATE__) + " at " + std::string(__TIME__) + CRLF)
 #define RPL_UMODEIS(hostname, channelname, mode, user)  ":" + hostname + " MODE " + channelname + " " + mode + " " + user + CRLF
 #define RPL_CREATIONTIME(nickname, channelname, creationtime) ": 329 " + nickname + " #" + channelname + " " + creationtime + CRLF
 #define RPL_CHANNELMODES(nickname, channelname, modes) ": 324 " + nickname + " #" + channelname + " " + modes + CRLF
@@ -13,6 +14,7 @@
 #define RPL_ENDOFNAMES(nickname, channelname) (": 366 " + nickname + " #" + channelname + " :END of /NAMES list" + CRLF)
 #define RPL_TOPICIS(nickname, channelname, topic) (": 332 " + nickname + " #" +channelname + " :" + topic + "\r\n")
 #define RPL_NAMECHANGE(oldnickname, newnickname, channelname) (":" + oldnickname + " NICK " + newnickname + " #" + channelname + CRLF)
+#define RPL_INVITING(nickname, invitedNickname, channelname) (": 341 " + nickname + " " + invitedNickname + " #" + channelname + CRLF)
 
 ///////// ERRORS ////////////////
 #define ERR_ERRONEUSUSERNAME(username) (": 432 " + username + " :Erroneous username")
@@ -36,3 +38,8 @@
 #define ERR_CHANNELISFULL(nickname, channelname) (": 471 " + nickname + " " + channelname + " :Cannot join channel (+l)" + CRLF)
 #define ERR_NOTENOUGHPARAMNAME(username) (": 461 " + username + " :Not enough parameters." + CRLF)
 #define ERR_USERONCHANNEL(nickname, channelname) (": 443 " + nickname + " #" + channelname + " :is already on channel" + CRLF)
+#define ERR_NEEDMOREPARAMS(command) (": 461 " + command + " :Not enough parameters" + CRLF)
+#define ERR_NOSUCHCHANNEL(nickname, channelname) (": 403 " + nickname + " " + channelname + " :No such channel" + CRLF)
+#define ERR_NOTONCHANNEL(nickname, channelname) (": 442 " + nickname + " #" + channelname + " :is not on that channel" + CRLF)
+#define ERR_TOOMANYCHANNELS(nickname) (": 405 " + nickname + " :You have joined too many channels" + CRLF)
+#define ERR_TOOMANYTARGETS(nickname) (": 407 " + nickname + " :Too many targets. No more than 10 channels can be joined at once." + CRLF)

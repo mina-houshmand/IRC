@@ -113,8 +113,9 @@ void Server::mode_command(std::string& cmd, int fd)
 	}
 	std::string chain = mode_chain.str();
 	if(chain.empty())
-		return ;
- 	channel->sendTo_all(RPL_CHANGEMODE(cli->getHostname(), channel->GetName(), mode_chain.str(), arguments));
+		return;
+ 	
+	channel->sendTo_all(RPL_CHANGEMODE(cli->getHostname(), channel->GetName(), mode_chain.str(), arguments));
 }
 
 std::string Server::invite_only(Channel *channel, char opera, std::string chain)

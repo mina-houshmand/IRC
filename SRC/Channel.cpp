@@ -2,6 +2,9 @@
 #include <iostream>
 #include <cerrno>
 #include <cstring>
+#include <sys/socket.h>
+#include <ctime>
+#include <sstream>
 
 Channel::Channel(){
 	this->invit_only = 0;
