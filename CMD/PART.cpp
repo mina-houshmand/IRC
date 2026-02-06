@@ -61,14 +61,14 @@ void Server::PART(std::string cmd, int fd)
 	std::vector<std::string> tmp;
 	std::string reason;
 	if (!SplitCmdPart(cmd, tmp, reason, fd))// ERR_NEEDMOREPARAMS (461) // if the channel name is empty
-		{senderror(461, GetClient(fd)->GetNickName(), GetClient(fd)->GetFd(), " :Not enough parameters\r\n"); return;}
+		{_sendResponse(ERR_NEEDMOREPARAMS(GetClient(fd)->GetNickName()), fd); return;}
 	for (size_t i = 0; i < tmp.size(); i++){
 		bool flag = false;
 		for (size_t j = 0; j < this->channels.size(); j++){ // search for the channel
 			if (this->channels[j].GetName() == tmp[i]){ // check if the channel exist
 				flag = true;
 				if (!channels[j].get_client(fd) && !channels[j].get_admin(fd)) // ERR_NOTONCHANNEL (442) // if the client is not in the channel
-					{senderror(442, GetClient(fd)->GetNickName(), "#" + tmp[i], GetClient(fd)->GetFd(), " :You're not on that channel\r\n"); continue;}
+					{_sendResponse(ERR_NOTONCHANNEL(GetClient(fd)->GetNickName(), "#" + tmp[i]), fd); continue;}
 					std::stringstream ss;
 					ss << ":" << GetClient(fd)->GetNickName() << "!~" << GetClient(fd)->GetUserName() << "@" << "localhost" << " PART #" << tmp[i];
 					if (!reason.empty())

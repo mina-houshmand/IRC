@@ -61,17 +61,19 @@ void	Server::KICK(std::string cmd, int fd)
     std::string reason = (cmd_tokens.size() > 3) ? cmd.substr(cmd.find(targetUser) + targetUser.size() + 1) : ":No reason provided";
     // Ensure the reason starts with ':'
     if (!reason.empty() && reason[0] != ':') {
-        reason.insert(reason.begin(), ':');
+		reason.insert(reason.begin(), ':');
     }
-
+	
     // Check if the channel exists
     Channel *channel = GetChannel(channelName);
-    if (!channel) {
-        senderror(403, GetClient(fd)->GetNickName(), channelName, GetClient(fd)->GetFd(), " :No such channel\r\n");
-        //OR
+	if (!channel) {
+		senderror(403, GetClient(fd)->GetNickName(), channelName, GetClient(fd)->GetFd(), " :No such channel\r\n");
+		//OR
 		//senderror(403, GetClient(fd)->GetNickName(), "#" + tmp[i], GetClient(fd)->GetFd(), " :No such channel\r\n");
 		return;
-    }
+	}
+
+	std::cout << "DEBUG: Is the user Admin? " << (channel->get_admin(fd) ? "Yes" : "No") << std::endl;
 
 	// Check if the client issuing the command is in the channel
     if (!channel->get_client(fd) && !channel->get_admin(fd)) {

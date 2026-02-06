@@ -131,6 +131,8 @@ Client *Channel::get_client(int fd){
 	return NULL;
 }
 Client *Channel::get_admin(int fd){
+	if (admins.empty())
+		return NULL;
 	for (std::vector<Client>::iterator it = admins.begin(); it != admins.end(); ++it){
 		if (it->GetFd() == fd)
 			return &(*it);
