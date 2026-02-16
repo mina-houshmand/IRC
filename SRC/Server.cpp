@@ -252,8 +252,12 @@ void Server::init(std::string port, std::string pass)
 		/*
 		ok here in this line the code is blocked and poll will wait for an event then if sth happends the poll will continue the code and we will check which fd had the event
 		*/
-		if((poll(&fds[0], fds.size(), -1) == -1) && Server::Signal == false)
-			throw(std::runtime_error("poll() faild"));
+
+		//if we dont check the signal -> This would throw an error even when the user pressed Ctrl+C (which is normal).
+
+		int pollResult = poll(&fds[0], fds.size(), -1);
+		if (pollResult == -1 && !Server::Signal)
+			throw(std::runtime_error("poll() failed"));
 
 		
 		for (size_t i = 0; i < fds.size(); i++)
