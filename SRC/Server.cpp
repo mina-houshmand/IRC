@@ -168,14 +168,16 @@ void Server::SignalHandler(int signum)
 
 void	Server::close_fds(){
 	for(size_t i = 0; i < clients.size(); i++){
-		std::cout << RED << "Client <" << clients[i].GetFd() << "> Disconnected" << WHI << std::endl;
+		printStatus(RED, "Client", clients[i].GetFd(), "Disconnected");
 		close(clients[i].GetFd());
 	}
-	if (server_fdsocket != -1){	
-		std::cout << RED << "Server <" << server_fdsocket << "> Disconnected" << WHI << std::endl;
+	if (server_fdsocket != -1){
+		printStatus(RED, "Server", server_fdsocket, "Disconnected");
 		close(server_fdsocket);
 	}
 }
+
+
 //---------------//Close and Signal Methods
 //---------------//Server Methods
 //Initializes the server and runs the main event loop until a signal tells it to stop
@@ -186,8 +188,8 @@ void Server::init(std::string port, std::string pass)
 	this->port = std::atoi(port.c_str());
 	this->set_sever_socket();
 
-	std::cout << GRE << "Server <" << server_fdsocket << "> Connected" << WHI << std::endl;
-	std::cout << "Waiting to accept a connection...\n";
+	printStatus(GRE, "Server", server_fdsocket, "Connected");
+	printMessage("Waiting to accept a connection...");	
 	while (Server::Signal == false)
 	{
 		/*
@@ -507,13 +509,16 @@ void Server::accept_new_client()
 		- fills cliadd with client IP & port
 	*/
 	int incofd = accept(server_fdsocket, (sockaddr *)&(cliadd), &len);
-	if (incofd == -1)
-		{std::cout << "accept() failed" << std::endl; return;}
+	if (incofd == -1){
+		printMessage("accept() failed");
+		return;}
 
 	//Set the new client socket to non-blocking mode.
 	//This is mandatory when using poll().
-	if (fcntl(incofd, F_SETFL, O_NONBLOCK) == -1)
-		{std::cout << "fcntl() failed" << std::endl; return;}
+	if (fcntl(incofd, F_SETFL, O_NONBLOCK) == -1){
+		printMessage("fcntl() failed"); 
+		return;
+	}
 
 
 	/*Tell poll():
@@ -542,7 +547,7 @@ void Server::accept_new_client()
 		notify when it sends data or disconnects
 	*/
 	fds.push_back(new_cli);
-	std::cout << GRE << "Client <" << incofd << "> Connected" << WHI << std::endl;
+	printStatus(GRE, "Client", incofd, "Connected");
 }
 
 void Server::reciveNewData(int fd)
@@ -574,7 +579,7 @@ void Server::reciveNewData(int fd)
 	if(bytes <= 0)
 	{
 		if (bytes == 0)
-			std::cout << RED << "Client <" << fd << "> Disconnected" << WHI << std::endl;
+			printStatus(RED, "Client", fd, "Disconnected");
 		else 
 			std::cerr << RED << "Error receiving data from Client <" << fd << ">: " << strerror(errno) << WHI << std::endl;
 		RmChannels(fd);

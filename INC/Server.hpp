@@ -26,6 +26,7 @@
 #define WHI "\e[0;37m"
 #define GRE "\e[1;32m"
 #define YEL "\e[1;33m"
+#define BLU "\e[1;34m"
 
 class Client;
 class Channel;
@@ -130,6 +131,20 @@ public:
 	void Invite(std::string &cmd, int &fd);
 	std::string gettopic(std::string& input);
 	int getpos(std::string &cmd);
+
+	//printing stuff
+	void printStatus(const std::string& color, const std::string& type, int fd, const std::string& status){
+		std::cout << color << type << " <" << fd << "> " << status << WHI << std::endl;
+	}
+	void printMessage(const std::string& message)
+	{
+		std::cout << BLU << message << std::endl;
+	}
+	void printError(const std::string& message)
+	{
+		std::cerr << RED << "[ERROR] " << message << WHI << std::endl;
+	}
+
 };
 
 #endif
