@@ -8,6 +8,7 @@ void Server::client_authen(int fd, std::string cmd)
 {
 	Client *cli = GetClient(fd);
 
+	std::cout << cli->GetFd() << " " << cli->GetUserName() << " cli" << std::endl; 
 	//trim the word "pass" from the command
 	cmd = cmd.substr(4);
 

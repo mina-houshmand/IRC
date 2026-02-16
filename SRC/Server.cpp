@@ -149,10 +149,20 @@ void Server::_sendResponse(std::string response, int fd)
 //---------------//Send Methods
 //---------------//Close and Signal Methods
 bool Server::Signal = false;
+
+//The handler must have this signature:
+// void handler(int signal);
+
+/*
+If the signal interrupts code that was already using std::cout, this can cause:
+Deadlocks
+Undefined behavior
+*/
 void Server::SignalHandler(int signum)
 {
 	(void)signum;
-	std::cout << std::endl << "Signal Received!" << std::endl;
+	const char* msg = "\nSignal Received!\n";
+    write(STDOUT_FILENO, msg, 18);
 	Server::Signal = true;
 }
 
@@ -630,6 +640,7 @@ std::vector<std::string> Server::split_cmd(std::string& cmd)
 	The >> operator reads from the stream until it encounters a whitespace character (space, tab, newline, etc.).
 	After extracting the token, the stream's internal pointer moves to the next word.
 	The loop continues until the end of the stream is reached.
+	{"heloo", "this"}
 	*/
 	while(stm >> token)
 	{
