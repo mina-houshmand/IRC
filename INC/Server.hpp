@@ -78,7 +78,7 @@ public:
 	static void SignalHandler(int signum);
 	void close_fds();
 	//---------------//Server Methods
-	void init(int port, std::string pass);
+	void init(std::string port, std::string pass);
 	void accept_new_client();
 	void set_sever_socket();
 	void reciveNewData(int fd);

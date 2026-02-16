@@ -180,10 +180,10 @@ void	Server::close_fds(){
 //---------------//Server Methods
 //Initializes the server and runs the main event loop until a signal tells it to stop
 //socket is like a phone when you wanna call s.o
-void Server::init(int port, std::string pass)
+void Server::init(std::string port, std::string pass)
 {
 	this->password = pass;
-	this->port = port;
+	this->port = std::atoi(port.c_str());
 	this->set_sever_socket();
 
 	std::cout << GRE << "Server <" << server_fdsocket << "> Connected" << WHI << std::endl;
