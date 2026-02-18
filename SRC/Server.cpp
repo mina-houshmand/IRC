@@ -1,7 +1,7 @@
 #include "../INC/Server.hpp"
 
 bool Server::isBotfull = false;
-Server::Server(){this->server_fdsocket = -1;}
+Server::Server(){this->server_socket_fd = -1;}
 Server::~Server(){}
 Server::Server(Server const &src){*this = src;}
 Server &Server::operator=(Server const &src){
@@ -12,7 +12,7 @@ Server &Server::operator=(Server const &src){
 		struct pollfd new_cli;
 		*/
 		this->port = src.port;
-		this->server_fdsocket = src.server_fdsocket;
+		this->server_socket_fd = src.server_socket_fd;
 		this->password = src.password;
 		this->clients = src.clients;
 		this->channels = src.channels;
@@ -23,7 +23,7 @@ Server &Server::operator=(Server const &src){
 }
 //---------------//Getters
 int Server::GetPort(){return this->port;}
-int Server::GetFd(){return this->server_fdsocket;}
+int Server::GetFd(){return this->server_socket_fd;}
 
 /*The loop iterates through each Client object in the clients vector.
 and If a match is found, 
@@ -54,7 +54,7 @@ Channel *Server::GetChannel(std::string name)
 }
 //---------------//Getters
 //---------------//Setters
-void Server::SetFd(int fd){this->server_fdsocket = fd;}
+void Server::SetFd(int fd){this->server_socket_fd = fd;}
 void Server::SetPort(int port){this->port = port;}
 void Server::SetPassword(std::string password){this->password = password;}
 std::string Server::GetPassword(){return this->password;}
@@ -171,12 +171,15 @@ void	Server::close_fds(){
 		printStatus(RED, "Client", clients[i].GetFd(), "Disconnected");
 		close(clients[i].GetFd());
 	}
-	if (server_fdsocket != -1){
-		printStatus(RED, "Server", server_fdsocket, "Disconnected");
-		close(server_fdsocket);
+	if (server_socket_fd != -1){
+		printStatus(RED, "Server", server_socket_fd, "Disconnected");
+		close(server_socket_fd);
 	}
 }
 
+bool Server::isSocketReadable(const pollfd& pfd) {
+    return (pfd.revents & POLLIN) != 0;
+}
 
 //---------------//Close and Signal Methods
 //---------------//Server Methods
@@ -188,7 +191,7 @@ void Server::init(std::string port, std::string pass)
 	this->port = std::atoi(port.c_str());
 	this->set_sever_socket();
 
-	printStatus(GRE, "Server", server_fdsocket, "Connected");
+	printStatus(GRE, "Server", server_socket_fd, "Connected");
 	printMessage("Waiting to accept a connection...");	
 	while (Server::Signal == false)
 	{
@@ -258,7 +261,6 @@ void Server::init(std::string port, std::string pass)
 		int pollResult = poll(&fds[0], fds.size(), -1);
 		if (pollResult == -1 && !Server::Signal)
 			throw(std::runtime_error("poll() failed"));
-
 		
 		for (size_t i = 0; i < fds.size(); i++)
 		{
@@ -269,14 +271,14 @@ void Server::init(std::string port, std::string pass)
 
 			/*
 			POLLIN is set in revents when the file descriptor is ready to read. This means:
-			For the server socket (server_fdsocket): A new client is trying to connect.
+			For the server socket (server_socket_fd): A new client is trying to connect.
 			For a client socket: The client has sent data that is ready to be read.
 			*/
 
 			/*
 			Your fds vector contains pollfd structures for all sockets the server cares about.
 			At runtime, fds looks like this:
-					fds[0] → listening socket (server_fdsocket)
+					fds[0] → listening socket (server_socket_fd)
 					fds[1] → client socket #1
 					fds[2] → client socket #2
 					fds[3] → client socket #3
@@ -302,14 +304,13 @@ void Server::init(std::string port, std::string pass)
 			The listening socket does not talk to clients.
 			It only creates client sockets.
 
-
 			*/
-			if (fds[i].revents & POLLIN)
+			if (isSocketReadable(fds[i]))
 			{
-				if (fds[i].fd == server_fdsocket)
-					this->accept_new_client();
+				if (fds[i].fd == server_socket_fd)
+					this->new_connection_request();
 				else
-					this->reciveNewData(fds[i].fd);
+					this->data_transform(fds[i].fd);
 			}
 		}
 	}
@@ -419,17 +420,17 @@ void Server::set_sever_socket()
 	add.sin_port = htons(port);
 
 	//create a socket and it returns fd
-	server_fdsocket = socket(AF_INET, SOCK_STREAM, 0);
-	if(server_fdsocket == -1)
+	server_socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+	if(server_socket_fd == -1)
 		throw(std::runtime_error("faild to create socket"));
 	
 	//set rules to this socket
 	/*
-	-server_fdsocket ->which socket we are configuring
+	-server_socket_fd ->which socket we are configuring
 	-SOL_SOCKET ->Set options at the socket level
 	-SO_REUSEADDR ->Allows the server to reuse the port immediately after closing, instead of waiting for the OS to free it.
 	*/
-	if(setsockopt(server_fdsocket, SOL_SOCKET, SO_REUSEADDR, &en, sizeof(en)) == -1)
+	if(setsockopt(server_socket_fd, SOL_SOCKET, SO_REUSEADDR, &en, sizeof(en)) == -1)
 		throw(std::runtime_error("faild to set option (SO_REUSEADDR) on socket"));
 	
 	//fcntl stands for file control.
@@ -447,7 +448,7 @@ void Server::set_sever_socket()
 		-recv() immediately returns if no data is available.
 	Perfect for servers handling multiple clients at once.
 	*/
-	if (fcntl(server_fdsocket, F_SETFL, O_NONBLOCK) == -1)
+	if (fcntl(server_socket_fd, F_SETFL, O_NONBLOCK) == -1)
 		throw(std::runtime_error("faild to set option (O_NONBLOCK) on socket"));
 
 	//Assign a specific IP address and port to your socket.
@@ -460,19 +461,19 @@ void Server::set_sever_socket()
 		Port already in use
 		trying to bind port <1024 without root
 	*/
-	if (bind(server_fdsocket, (struct sockaddr *)&add, sizeof(add)) == -1)
+	if (bind(server_socket_fd, (struct sockaddr *)&add, sizeof(add)) == -1)
 		throw(std::runtime_error("faild to bind socket"));
 
 	//Put the socket into listening mode to accept incoming connections.
 	//SOMAXCONN -> maximum number of pending connections allowed
 
-	if (listen(server_fdsocket, SOMAXCONN) == -1)
+	if (listen(server_socket_fd, SOMAXCONN) == -1)
 		throw(std::runtime_error("listen() faild"));
 
 	/*
 	Step-by-step flow
 
-	Create listening socket → server_fdsocket
+	Create listening socket → server_socket_fd
 	Add it to pollfd (new_cli) to watch for incoming connections
 	Call poll() → OS tells you a client is trying to connect
 	Call accept() → returns new client socket FD
@@ -487,7 +488,7 @@ void Server::set_sever_socket()
 		- watch this socket
 		-  notify when it sends data or disconnects
 	*/
-	new_cli.fd = server_fdsocket;
+	new_cli.fd = server_socket_fd;
 	new_cli.events = POLLIN;
 	new_cli.revents = 0;
 
@@ -496,123 +497,6 @@ void Server::set_sever_socket()
 }
 
 
-void Server::accept_new_client()
-{
-	Client cli;
-
-	//Clear client address structure and Avoids garbage data
-	memset(&cliadd, 0, sizeof(cliadd));
-	socklen_t len = sizeof(cliadd);
-
-	/* in accept():
-	- OS checks the listening socket
-	- Takes one pending client
-	- Creates a new socket
-	Returns:
-		- a new FD (incofd)
-		- fills cliadd with client IP & port
-	*/
-	int incofd = accept(server_fdsocket, (sockaddr *)&(cliadd), &len);
-	if (incofd == -1){
-		printMessage("accept() failed");
-		return;}
-
-	//Set the new client socket to non-blocking mode.
-	//This is mandatory when using poll().
-	if (fcntl(incofd, F_SETFL, O_NONBLOCK) == -1){
-		printMessage("fcntl() failed"); 
-		return;
-	}
-
-
-	/*Tell poll():
-		- watch this client socket
-		-  notify when it sends data or disconnects
-	*/
-	new_cli.fd = incofd;
-	new_cli.events = POLLIN;
-	new_cli.revents = 0;
-	cli.SetFd(incofd);
-
-	/*
-		cliadd.sin_addr → client IP (binary form)
-		inet_ntoa() 	→ converts it to readable string
-		setIpAdd() 		→ stores it in the client object
-	*/
-	cli.setIpAdd(inet_ntoa((cliadd.sin_addr)));
-
-	//Adds the client to your server’s client list
-	//Server now knows this client exists
-	clients.push_back(cli);
-
-	//Adds the client socket to the pollfd list to monitor it
-	/*Now poll() will:
-		monitor this client
-		notify when it sends data or disconnects
-	*/
-	fds.push_back(new_cli);
-	printStatus(GRE, "Client", incofd, "Connected");
-}
-
-void Server::reciveNewData(int fd)
-{
-	std::vector<std::string> cmd;
-	/*
-	what if the data is bigger than the buffer size??
-	it gonna go back to the poll and
-	The poll() function will detect that the socket is still readable.
-	The POLLIN event will be set for that socket in the next poll() call.
-	The server will call reciveNewData() for that socket again to read the remaining data
-	*/
-	char buff[1024];
-
-	//Fills the buffer with 0 bytes. to clear it
-	memset(buff, 0, sizeof(buff));
-	Client *cli = GetClient(fd);
-
-	//recv() reads data from the client socket and stores it in buff
-	/*
-	ir returns:
-		>0 number of bytes successfully received from the socket.
-		0 client disconnected
-		<0 error
-	*/
-	//The -1 ensures there is space for a null terminator (\0) if the data is treated as a string.
-	// 0 -> means no special flags are set, and the function operates in its default mode.
-	ssize_t bytes = recv(fd, buff, sizeof(buff) - 1 , 0);
-	if(bytes <= 0)
-	{
-		if (bytes == 0)
-			printStatus(RED, "Client", fd, "Disconnected");
-		else 
-			std::cerr << RED << "Error receiving data from Client <" << fd << ">: " << strerror(errno) << WHI << std::endl;
-		RmChannels(fd);
-		RemoveClient(fd);
-		RemoveFds(fd);
-		close(fd);
-	}
-	else
-	{ 
-		//the std::string constructor is automatically called to convert the char[] into a std::string.
-		//std::string(const char* s); SO we can pass char[] to setBuffer
-		cli->setBuffer(buff);
-
-		//\r\n  to detect the end of a command sent by the client.
-		//The IRC protocol specifies that commands must end with \r\n.
-		//If the buffer does not contain \r\n, the server assumes the command is incomplete and waits for more data.
-		if(cli->getBuffer().find_first_of("\r\n") == std::string::npos)
-			return;
-
-		
-		cmd = split_recivedBuffer(cli->getBuffer());
-		for(size_t i = 0; i < cmd.size(); i++)
-			this->parse_exec_cmd(cmd[i], fd);
-
-		//After processing all complete commands, the server clears the client's buffer to prepare for new incoming data.
-		if(GetClient(fd))
-			GetClient(fd)->clearBuffer();
-	}
-}
 //---------------//Server Methods
 //---------------//Parsing Methods
 std::vector<std::string> Server::split_recivedBuffer(std::string str)

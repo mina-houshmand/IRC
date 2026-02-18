@@ -35,7 +35,7 @@ class Server
 {
 private:
 	int port;
-	int server_fdsocket;
+	int server_socket_fd;
 	static bool Signal;
 	std::string password;
 	std::vector<Client> clients;
@@ -58,7 +58,7 @@ public:
 	Client *GetClientNick(std::string nickname);
 	Channel *GetChannel(std::string name);
 	//---------------//Setters
-	void SetFd(int server_fdsocket);
+	void SetFd(int server_socket_fd);
 	void SetPort(int port);
 	void SetPassword(std::string password);
 	void AddClient(Client newClient);
@@ -80,9 +80,19 @@ public:
 	void close_fds();
 	//---------------//Server Methods
 	void init(std::string port, std::string pass);
-	void accept_new_client();
+	bool isSocketReadable(const pollfd& pfd);
+
 	void set_sever_socket();
-	void reciveNewData(int fd);
+
+	//new connection request
+	void new_connection_request();
+	int	 acceptNewClient();
+	void setupClientSocket(int fd);
+	void addClientToPoll(int fd);
+
+
+	//data transform
+	void data_transform(int fd);
 	//---------------//Parsing Methods
 	std::vector<std::string> split_recivedBuffer(std::string str);
 	std::vector<std::string> split_cmd(std::string &str);
