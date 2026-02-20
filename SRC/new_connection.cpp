@@ -36,11 +36,17 @@ void Server::setupClientSocket(int fd)
     - watch this client socket
     -  notify when it sends data or disconnects
 */
+//Adds the client socket to the pollfd list to monitor it
+/*Now poll() will:
+    monitor this client
+    notify when it sends data or disconnects
+*/
 void Server::addClientToPoll(int fd)
 {
     new_cli.fd = fd;
     new_cli.events = POLLIN;
     new_cli.revents = 0;
+    fds.push_back(new_cli);
 }
 
 /*
@@ -72,13 +78,5 @@ void Server::new_connection_request()
     addClientToPoll(incofd);
     initializeClient(client, incofd);
     addClientToServer(client);
-
-
-	//Adds the client socket to the pollfd list to monitor it
-	/*Now poll() will:
-		monitor this client
-		notify when it sends data or disconnects
-	*/
-	fds.push_back(new_cli);
 	printStatus(GRE, "Client", incofd, "Connected");
 }
