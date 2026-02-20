@@ -89,6 +89,9 @@ public:
 	int	 acceptNewClient();
 	void setupClientSocket(int fd);
 	void addClientToPoll(int fd);
+	void addClientToServer(const Client &client);
+	void initializeClient(Client &client, int fd);
+
 
 
 	//data transform
