@@ -79,7 +79,7 @@ public:
 	static void SignalHandler(int signum);
 	void close_fds();
 	//---------------//Server Methods
-	void init(std::string port, std::string pass);
+	void server_config(std::string port, std::string pass);
 	bool isSocketReadable(const pollfd& pfd);
 
 	void set_sever_socket();
@@ -87,7 +87,7 @@ public:
 	//new connection request
 	void new_connection_request();
 	int	 acceptNewClient();
-	void setupClientSocket(int fd);
+	bool setupClientSocket(int fd);
 	void addClientToPoll(int fd);
 	void addClientToServer(const Client &client);
 	void initializeClient(Client &client, int fd);

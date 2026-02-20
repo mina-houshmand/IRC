@@ -24,12 +24,14 @@ int Server::acceptNewClient()
 }
 //Set the new client socket to non-blocking mode.
 //This is mandatory when using poll().
-void Server::setupClientSocket(int fd)
+bool Server::setupClientSocket(int fd)
 {
     if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1){
-        printError("fcntl() failed : Failed to set non-blocking mode");
+        printError("fcntl() failed: " + std::string(strerror(errno)));
         close(fd);
+        return false;  // ← Just that client failed
     }
+    return true;
 }
 
 /*Tell poll():
@@ -74,7 +76,8 @@ void Server::new_connection_request()
     int incofd = acceptNewClient();
     if (incofd == -1)
         return;
-    setupClientSocket(incofd);
+    if (!setupClientSocket(incofd))
+        return;
     addClientToPoll(incofd);
     initializeClient(client, incofd);
     addClientToServer(client);

@@ -78,7 +78,7 @@ int main(int ac, char **av)
 			return 1;
 		}
 		
-		ser.init(av[1], av[2]);
+		ser.server_config(av[1], av[2]);
 	}
 	catch(const std::exception& e)
 	{
