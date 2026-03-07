@@ -49,12 +49,19 @@ public:
 	~Server();
 	Server(Server const &src);
 	Server &operator=(Server const &src);
+
+	int GetPort(){return this->port;}
+	int GetFd(){return this->server_socket_fd;}
+	void disconnectClient(int fd){
+		RmChannels(fd);
+		RemoveClient(fd);
+		RemoveFds(fd);
+		close(fd);
+	}
 	//---------------//Getters
 	static bool isBotfull;
-	int GetFd();
-	int GetPort();
 	std::string GetPassword();
-	Client *GetClient(int fd);
+	Client *GetClient(int current_fd);
 	Client *GetClientNick(std::string nickname);
 	Channel *GetChannel(std::string name);
 	//---------------//Setters

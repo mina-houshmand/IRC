@@ -19,19 +19,20 @@ private:
 	std::vector<std::string> ChannelsInvite;
 public:
 	Client();
-	Client(std::string nickname, std::string username, int fd);
-	~Client();
-	Client(Client const &src);
+	Client(std::string nickname, std::string username, int fd) :fd(fd), nickname(nickname), username(username){};
+	~Client(){};
+	Client(Client const &src){*this = src;};
 	Client &operator=(Client const &src);
 
 
-	void SetClient_Fd(int fd);
-	void set_IpAddress(struct in_addr addr);
+	void	SetClient_Fd(int fd);
+	void	set_IpAddress(struct in_addr addr);
+	int		GetFd(){return this->fd;}
+	bool	getRegistered(){return registered;}
 
 
 	//---------------//Getters
-	int GetFd();
-	bool getRegistered();
+
 	bool GetInviteChannel(std::string &ChName);
 	std::string GetNickName();
 	bool 		GetLogedIn();
@@ -45,7 +46,6 @@ public:
 	void SetUsername(std::string& username);
 	void setBuffer(std::string recived);
 	void setRegistered(bool value);
-	void setIpAdd(std::string ipadd);
 	//---------------//Methods
 	void clearBuffer();
 	void AddChannelInvite(std::string &chname);

@@ -1,19 +1,16 @@
 #include "../INC/Client.hpp"
 
 Client::Client()
-{
-	this->nickname = "";
-	this->username = "";
-	this->fd = -1;
-	this->isOperator= false;
-	this->registered = false;
-	this->buffer = "";
-	this->ipadd = "";
-	this->logedin = false;
-}
-Client::Client(std::string nickname, std::string username, int fd) :fd(fd), nickname(nickname), username(username){}
-Client::~Client(){}
-Client::Client(Client const &src){*this = src;}
+    : fd(-1)
+    , isOperator(false)
+    , registered(false)
+    , logedin(false)
+    , nickname("")
+    , username("")
+    , buffer("")
+    , ipadd("")
+    , ChannelsInvite()
+{}
 Client &Client::operator=(Client const &src){
 	if (this != &src){
 		this->nickname = src.nickname;
@@ -27,9 +24,8 @@ Client &Client::operator=(Client const &src){
 	}
 	return *this;
 }
+
 //---------------//Getters
-int Client::GetFd(){return this->fd;}
-bool Client::getRegistered(){return registered;}
 bool Client::GetInviteChannel(std::string &ChName){
 	for (size_t i = 0; i < this->ChannelsInvite.size(); i++){
 		if (this->ChannelsInvite[i] == ChName)

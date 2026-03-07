@@ -22,16 +22,16 @@ Server &Server::operator=(Server const &src){
 	return *this;
 }
 //---------------//Getters
-int Server::GetPort(){return this->port;}
-int Server::GetFd(){return this->server_socket_fd;}
 
 /*The loop iterates through each Client object in the clients vector.
 and If a match is found, 
 it returns a pointer to the Client object using &this->clients[i].
 */
-Client *Server::GetClient(int fd){
-	for (size_t i = 0; i < this->clients.size(); i++){
-		if (this->clients[i].GetFd() == fd)
+Client *Server::GetClient(int current_fd){
+	size_t clients_size = this->clients.size();
+	for (size_t i = 0; i < clients_size; i++){
+		int client_fd = this->clients[i].GetFd();
+		if (client_fd == current_fd)
 			return &this->clients[i];
 	}
 	return NULL;
