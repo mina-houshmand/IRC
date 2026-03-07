@@ -1,5 +1,15 @@
 #include "../INC/Server.hpp"
 
+void Server::processClientCommands(const std::string &buffer, int fd)
+{
+    std::vector<std::string> commands = split_recivedcmd(buffer);
+    
+    for (size_t i = 0; i < commands.size(); i++) {
+        if (!commands[i].empty())
+            this->handleClientCommand(commands[i], fd);
+    }
+}
+
 /*
 what if the data is bigger than the buffer size??
 it gonna go back to the poll and
@@ -18,6 +28,7 @@ The -1 ensures there is space for a null terminator (\0) if the data is treated 
 0 -> means no special flags are set, and the function operates in its default mode.
 
 */
+
 void Server::data_transform(int fd)
 {
 	std::vector<std::string> cmd;
@@ -42,9 +53,8 @@ void Server::data_transform(int fd)
 		if(cli->GetCmds().find_first_of("\r\n") == std::string::npos)
 			return;
 		
-		cmd = split_recivedcmd(cli->GetCmds());
-		for(size_t i = 0; i < cmd.size(); i++)
-			this->parse_exec_cmd(cmd[i], fd);
+		processClientCommands(cli->GetCmds(), fd);
+
 
 		//After processing all complete commands, the server clears the client's buffer to prepare for new incoming data.
 		if(GetClient(fd))

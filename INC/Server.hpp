@@ -60,7 +60,8 @@ public:
 	}
 	//parsing
 	std::vector<std::string> split_recivedcmd(std::string str);
-	std::vector<std::string> split_cmd(std::string &str);
+	std::vector<std::string> split_cmd( std::string &str);
+	void handleClientCommand(std::string &cmd, int fd);
 
 
 
@@ -115,11 +116,10 @@ public:
 
 	//data transform
 	void data_transform(int fd);
+	void processClientCommands(const std::string &buffer, int fd);
 
 
 
-	//---------------//Parsing Methods
-	void parse_exec_cmd(std::string &cmd, int fd);
 	//---------------//Authentification Methods
 	// bool BypassForBot(std::string cmd, int fd);
 	// bool notregistered(int fd);
