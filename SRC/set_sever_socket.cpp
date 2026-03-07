@@ -8,18 +8,18 @@ Your server is a program that waits for calls
 A client is a program that calls it
 The network (IP + port) is the phone number
 The socket is the phone device itself
-*/
 
-/*
+
+
 1-Create a socket → get a phone
 2-Configure the socket → set rules for the phone
 3-Bind → give it an address (IP + port)
 4-Listen → start waiting for calls
 5-Accept → pick up calls (not shown yet in your code)
 Your function does steps 1–4.
-*/
 
-/*
+
+
 server_socket = socket(AF_INET, SOCK_STREAM, 0);
 server_socket holds a valid FD for the socket you created
 
@@ -28,9 +28,9 @@ server_socket holds a valid FD for the socket you created
 -How should data be sent?	-->		SOCK_STREAM → TCP (reliable, ordered)
 									SOCK_DGRAM → UDP (fast, unreliable)
 -protocol --> usually 0 to choose the default for the type
-*/
 
-/*
+
+
 where should this socket live?
 That’s where structures come in.
 
@@ -51,9 +51,6 @@ struct sockaddr_in {
 
 
 
-*/
-
-/*
 
 After creating the socket and preparing its address structure with 
 the desired IP and port, the socket must be configured using socket 
@@ -81,9 +78,7 @@ to accept incoming connections.
 ❌ Closed the client socket (close())
 🔒 Closed the server socket (close())
 
-*/
 
-	/*
 	Step-by-step flow
 
 	Create listening socket → server_socket_fd
@@ -91,16 +86,16 @@ to accept incoming connections.
 	Call poll() → OS tells you a client is trying to connect
 	Call accept() → returns new client socket FD
 	Add that new client FD to pollfd list → now you can monitor it for data
-	*/
 
 	//here we created the socket and we are adding it to the pollfd list
 	//and then we add each socket to the fds vector to monitor it
 	//then in the main loop we call poll on the fds vector
 
-	/*Tell poll():
+	Tell poll():
 		- watch this socket
 		-  notify when it sends data or disconnects
-	*/
+	
+*/
 
 void Server::addSocketToPoll(int fd)
 {
@@ -110,80 +105,81 @@ void Server::addSocketToPoll(int fd)
     fds.push_back(new_cli);
 }
 
+void Server::initializeAddress(struct sockaddr_in &address, int port) {
+    std::memset(&address, 0, sizeof(address));
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = INADDR_ANY;     //Accept connections on any network interface
+    address.sin_port = htons(port);
+}
 
 void Server::set_sever_socket()
 {
-	//this is like a switch button
-	int en = 1;
+	int enable = 1;
 
-	/*
-	add.sin_family = AF_INET :
-	Must match the socket ->
-	-Socket → AF_INET
-	-Address → AF_INET
-	*/
-	add.sin_family = AF_INET;
-
-	//Accept connections on any network interface
-	add.sin_addr.s_addr = INADDR_ANY;
-
-	// from #include <arpa/inet.h>
-	//converts port to → network byte order
-	//network order is big-endian like convert 8080 to hex : 0x1F90 and convert to big-endian : 1F 90
-	add.sin_port = htons(port);
-
-	//create a socket and it returns fd
 	server_socket_fd = socket(AF_INET, SOCK_STREAM, 0);
 	if(server_socket_fd == -1)
-		throw(std::runtime_error("faild to create socket"));
+		throw(std::runtime_error("Failed to create socket"));
 	
-	//set rules to this socket
-	/*
-	-server_socket_fd ->which socket we are configuring
-	-SOL_SOCKET ->Set options at the socket level
-	-SO_REUSEADDR ->Allows the server to reuse the port immediately after closing, instead of waiting for the OS to free it.
-	*/
-	if(setsockopt(server_socket_fd, SOL_SOCKET, SO_REUSEADDR, &en, sizeof(en)) == -1)
-		throw(std::runtime_error("faild to set option (SO_REUSEADDR) on socket"));
+	if(setsockopt(server_socket_fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(enable)) == -1)
+		throw(std::runtime_error("Failed to set socket option SO_REUSEADDR"));
 	
-	//fcntl stands for file control.
-	//Sockets are treated like files in Unix/Linux
-	//change the behavior of the socket.
-	/*
-	F_SETFL --> Set file status flags
-	O_NONBLOCK --> Non-blocking mode
-
-	By default, sockets are blocking:
-		- accept() waits forever for a client.
-		- recv() waits forever for data.
-	With non-blocking:
-		-accept() immediately returns if no client is connecting.
-		-recv() immediately returns if no data is available.
-	Perfect for servers handling multiple clients at once.
-	*/
 	if (fcntl(server_socket_fd, F_SETFL, O_NONBLOCK) == -1)
-		throw(std::runtime_error("faild to set option (O_NONBLOCK) on socket"));
+		throw(std::runtime_error("Failed to set socket to non-blocking mode"));
 
-	//Assign a specific IP address and port to your socket.
-	//bind() connects the socket to the address you prepared earlier.
-	// “Give this socket a phone number so clients can call it.”
-	// we cast the structure with -> (struct sockaddr *) 
-	//bind() expects a generic address type (struct sockaddr *)
-	/*
-	Common reasons to bind can fail:
-		Port already in use
-		trying to bind port <1024 without root
-	*/
+    initializeAddress(add, port);
+
 	if (bind(server_socket_fd, (struct sockaddr *)&add, sizeof(add)) == -1)
-		throw(std::runtime_error("faild to bind socket"));
-
-	//Put the socket into listening mode to accept incoming connections.
-	//SOMAXCONN -> maximum number of pending connections allowed
+		throw(std::runtime_error("Failed to bind socket"));
 
 	if (listen(server_socket_fd, SOMAXCONN) == -1)
-		throw(std::runtime_error("listen() faild"));
+		throw(std::runtime_error("Failed to listen on socket"));
 
     addSocketToPoll(server_socket_fd);
 
 }
 
+/*
+----------------------------------------------------------------
+setsockopt()
+
+-SOL_SOCKET ->Set options at the socket level
+-SO_REUSEADDR ->Allows the server to reuse the port immediately after closing, instead of waiting for the OS to free it.
+
+----------------------------------------------------------------
+fcntl()
+fcntl stands for file control.
+Sockets are treated like files in Unix/Linux
+change the behavior of the socket.
+
+F_SETFL --> Set file status flags
+O_NONBLOCK --> Non-blocking mode
+
+By default, sockets are blocking:
+    - accept() waits forever for a client.
+    - recv() waits forever for data.
+With non-blocking:
+    -accept() immediately returns if no client is connecting.
+    -recv() immediately returns if no data is available.
+Perfect for servers handling multiple clients at once.
+
+------------------------------------------------------------------
+bind()
+
+Assign a specific IP address and port to your socket.
+bind() connects the socket to the address you prepared earlier.
+“Give this socket a phone number so clients can call it.”
+we cast the structure with -> (struct sockaddr *) 
+bind() expects a generic address type (struct sockaddr *)
+
+Common reasons to bind can fail:
+    Port already in use
+    trying to bind port <1024 without root
+
+------------------------------------------------------------------
+listen()
+
+Put the socket into listening mode to accept incoming connections.
+SOMAXCONN -> maximum number of pending connections allowed
+
+
+*/

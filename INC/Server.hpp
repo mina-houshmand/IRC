@@ -85,6 +85,7 @@ public:
 	bool isSocketReadable(const pollfd& pfd);
 
 	void set_sever_socket();
+	void initializeAddress(struct sockaddr_in &address, int port);
 	void addSocketToPoll(int fd);
 
 	//new connection request
