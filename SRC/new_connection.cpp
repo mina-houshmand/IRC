@@ -16,7 +16,7 @@ int Server::acceptNewClient()
     int clientFd = accept(server_socket_fd, (sockaddr *)&cliadd, &addrLen);
     
     if (clientFd == -1) {
-        printError("accept() failed: " + std::string(strerror(errno)));
+        printError("Failed : to accept() the new  connection: ");
         return -1;
     }
     
@@ -27,7 +27,7 @@ int Server::acceptNewClient()
 bool Server::setupClientSocket(int fd)
 {
     if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1){
-        printError("fcntl() failed: " + std::string(strerror(errno)));
+        printError("Failed : fcntl() to set new client socket to non-blocking mode");
         close(fd);
         return false;  // ← Just that client failed
     }
@@ -56,10 +56,9 @@ cliadd.sin_addr → client IP (binary form)
 inet_ntoa() 	→ converts it to readable string
 setIpAdd() 		→ stores it in the client object
 */
-void Server::initializeClient(Client &client, int fd)
-{
-    client.SetFd(fd);
-    client.setIpAdd(inet_ntoa((cliadd.sin_addr)));
+void Server::initializeClient(Client &client, int fd){
+    client.SetClient_Fd(fd);
+    client.set_IpAddress(cliadd.sin_addr);
 }
 
 //Adds the client to your server’s client list
@@ -73,13 +72,13 @@ void Server::new_connection_request()
 {
 	Client client;
 
-    int incofd = acceptNewClient();
-    if (incofd == -1)
+    int client_fd = acceptNewClient();
+    if (client_fd == -1)
         return;
-    if (!setupClientSocket(incofd))
+    if (!setupClientSocket(client_fd))
         return;
-    addClientToPoll(incofd);
-    initializeClient(client, incofd);
+    addClientToPoll(client_fd);
+    initializeClient(client, client_fd);
     addClientToServer(client);
-	printStatus(GRE, "Client", incofd, "Connected");
+	printStatus(GRE, "Client", client_fd, "Connected");
 }

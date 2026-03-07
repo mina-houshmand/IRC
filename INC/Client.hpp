@@ -3,6 +3,7 @@
 
 #include "Server.hpp"
 #include "Channel.hpp"
+#include <arpa/inet.h>
 
 class Client
 {
@@ -22,6 +23,12 @@ public:
 	~Client();
 	Client(Client const &src);
 	Client &operator=(Client const &src);
+
+
+	void SetClient_Fd(int fd);
+	void set_IpAddress(struct in_addr addr);
+
+
 	//---------------//Getters
 	int GetFd();
 	bool getRegistered();
@@ -32,8 +39,7 @@ public:
 	std::string getIpAdd();
 	std::string getBuffer();
 	std::string getHostname();
-	//---------------//Setters
-	void SetFd(int fd);
+
 	void SetNickname(std::string& nickName);
 	void setLogedin(bool value);
 	void SetUsername(std::string& username);

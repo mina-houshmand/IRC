@@ -46,15 +46,30 @@ std::string Client::getHostname(){
 	std::string hostname = this->GetNickName() + "!" + this->GetUserName();
 	return hostname;
 }
-//---------------//Getters
-//---------------//Setters
-void Client::SetFd(int fd){this->fd = fd;}
+
+
+void Client::SetClient_Fd(int fd){
+	if (fd < 0) {
+        throw std::invalid_argument("File descriptor cannot be negative");
+    }
+    this->fd = fd;
+}
+
+void Client::set_IpAddress(struct in_addr addr){
+    char* ipStr = inet_ntoa(addr);
+    if (ipStr == NULL) {
+        this->ipadd = "";
+        throw std::runtime_error("Failed to convert IP address");
+    }
+    this->ipadd = ipStr;
+}
+
+
 void Client::SetNickname(std::string& nickName){this->nickname = nickName;}
 void Client::setLogedin(bool value){this->logedin = value;}
 void Client::SetUsername(std::string& username){this->username = username;}
 void Client::setBuffer(std::string recived){buffer += recived;}
 void Client::setRegistered(bool value){registered = value;}
-void Client::setIpAdd(std::string ipadd){this->ipadd = ipadd;}
 //---------------//Setters
 //---------------//Methods
 void Client::clearBuffer(){buffer.clear();}
