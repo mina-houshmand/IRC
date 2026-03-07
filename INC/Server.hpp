@@ -88,6 +88,8 @@ public:
 	void initializeAddress(struct sockaddr_in &address, int port);
 	void addSocketToPoll(int fd);
 
+	int performPoll_request();
+
 	//new connection request
 	void new_connection_request();
 	int	 acceptNewClient();

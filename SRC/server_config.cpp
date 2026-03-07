@@ -1,5 +1,16 @@
 #include "../INC/Server.hpp"
 
+//if we dont check the signal -> This would throw an 
+// error even when the user pressed Ctrl+C (which is normal).
+
+int Server::performPoll_request() {
+    int pollResult = poll(&fds[0], fds.size(), -1);
+    if (pollResult == -1 && !Server::Signal) {
+        throw std::runtime_error("Failed: poll request");
+    }
+    return pollResult;
+}
+
 bool Server::isSocketReadable(const pollfd& pfd) {
     int readFlag = pfd.revents & POLLIN;  // Extract POLLIN bit
     bool hasData = (readFlag != 0);        // Check if it's set
@@ -12,17 +23,15 @@ What poll() does
     poll() waits until something happens on any socket in fds
     When it returns:
         It sets revents for the sockets that had activity
-*/
 
-/*
+
 poll return value-->
 poll() only tells which sockets are ready
     > 0 -->Number of sockets that have events (ready to read/write)
     0   --> Timeout occurred (not used here because -1)
     -1  --> Error occurred (or signal interrupted it)
-*/
 
-/*
+
 struct pollfd {
     int   fd;       // the socket/file descriptor
     short events;   // what we want to watch (input/output)
@@ -37,9 +46,9 @@ POLLOUT → ready to write
 POLLERR → error
 
 POLLHUP -> Socket is hung up / disconnected
-*/
 
-/* poll() implementationL:
+
+ poll() implementationL:
 int poll(struct pollfd *fds, nfds_t nfds, int timeout);
 
 struct pollfd *fds  → the list/array of sockets (file descriptors) you want to watch
@@ -48,17 +57,16 @@ int timeout 		→ how long to wait before giving up
 -1 --> wait forever → block until something happens
 
 in poll() line the code is gonna blocked and waite for connection.
-*/
 
 
-//here we wanna check if there is an event on this fd
-//by checking if bitwise of POLLIN and revents is 1,
-//If POLLIN is set in revents, it means the socket is ready to read.
-//so POLLIN is 0x0001 and bitwise with revents if revents is also
-// not 0 the result will be 0x0001 which is true
+
+here we wanna check if there is an event on this fd
+by checking if bitwise of POLLIN and revents is 1,
+If POLLIN is set in revents, it means the socket is ready to read.
+so POLLIN is 0x0001 and bitwise with revents if revents is also
+not 0 the result will be 0x0001 which is true
 
 
-/*
 Your fds vector contains pollfd structures for all sockets the server cares about.
 At runtime, fds looks like this:
         fds[0] → listening socket (server_socket_fd)
@@ -90,20 +98,17 @@ void Server::server_config(std::string port, std::string pass)
 	printMessage("Waiting to accept a connection...");	
 	while (Server::Signal == false)
 	{
-		//if we dont check the signal -> This would throw an 
-        // error even when the user pressed Ctrl+C (which is normal).
-		int pollResult = poll(&fds[0], fds.size(), -1);
-		if (pollResult == -1 && !Server::Signal)
-			throw(std::runtime_error("poll() failed"));
-		
-		for (size_t i = 0; i < fds.size(); i++)
-		{
-			if (isSocketReadable(fds[i]))
+		int pollResult = performPoll_request();
+		if (pollResult > 0) {		
+			for (size_t i = 0; i < fds.size(); i++)
 			{
-				if (fds[i].fd == server_socket_fd)
-					this->new_connection_request();
-				else
-					this->data_transform(fds[i].fd);
+				if (isSocketReadable(fds[i]))
+				{
+					if (fds[i].fd == server_socket_fd)
+						this->new_connection_request();
+					else
+						this->data_transform(fds[i].fd);
+				}
 			}
 		}
 	}
