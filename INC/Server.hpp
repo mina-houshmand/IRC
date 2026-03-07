@@ -60,8 +60,11 @@ public:
 	}
 	//parsing
 	std::vector<std::string> split_recivedcmd(std::string str);
-	std::vector<std::string> split_cmd( std::string &str);
 	void handleClientCommand(std::string &cmd, int fd);
+	std::vector<std::string> split_cmd( std::string &str);
+	void Server::trimLeadingWhitespace(std::string &cmd);
+	void Server::cmd_toUpper(std::string &command);
+
 
 
 
@@ -123,7 +126,7 @@ public:
 	//---------------//Authentification Methods
 	// bool BypassForBot(std::string cmd, int fd);
 	// bool notregistered(int fd);
-	bool isregistered(int fd);
+	bool isClientRegistered(int fd);
 	bool nickNameInUse(std::string& nickname);
 	bool is_validNickname(std::string& nickname);
 	void client_authen(int fd, std::string pass);

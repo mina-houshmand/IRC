@@ -55,7 +55,6 @@ void Server::data_transform(int fd)
 		
 		processClientCommands(cli->GetCmds(), fd);
 
-
 		//After processing all complete commands, the server clears the client's buffer to prepare for new incoming data.
 		if(GetClient(fd))
 			GetClient(fd)->clearBuffer();

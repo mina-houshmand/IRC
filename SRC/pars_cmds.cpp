@@ -1,69 +1,72 @@
 #include "../INC/Server.hpp"
 
+void Server::cmd_toUpper(std::string &command){
+    for (size_t i = 0; i < command.size(); ++i) {
+        command[i] = std::toupper(command[i]);
+    }	
+}
+void Server::trimLeadingWhitespace(std::string &cmd)
+{
+    size_t firstChar = cmd.find_first_not_of(" \t\v");
+    if (firstChar != std::string::npos)
+        cmd = cmd.substr(firstChar);
+}
 
-
+/*
+1 -split_cmd : separates the command string into individual words/tokens based on whitespace
+2- found : finds the index of the first non-whitespace character in the command string
+3 - trimLeadingWhitespace : removes any leading whitespace from the command string, ensuring that the command is properly formatted for processing.
+*/
 void Server::handleClientCommand(std::string &cmd, int fd)
 {
-	if(cmd.empty())
-		return ;
-	
-	//separates the command string into individual words/tokens based on whitespace
-	std::vector<std::string> splited_cmd = split_cmd(cmd);
+	std::string trimmedCmd = cmd;
+    trimLeadingWhitespace(trimmedCmd);
 
-	//returns the index of the first character in cmd that is not one of the characters in the string " \t\v".
-	size_t found = cmd.find_first_not_of(" \t\v");
-
-	/*
-	The substr method creates a substring of cmd starting from the index found.
-	This removes all leading whitespace characters from cmd.
-	*/
-	if(found != std::string::npos)
-		cmd = cmd.substr(found);
-
-	//mina did this
-	if (splited_cmd.empty())
+	std::vector<std::string> tokens = split_cmd(cmd);
+	if (tokens.empty())
 		return;
 
-	std::string command = splited_cmd[0];
-	for (size_t i = 0; i < command.size(); ++i) {
-		command[i] = std::toupper(command[i]);
-	}	
+	std::string command = tokens[0];
+	cmd_toUpper(command);
 
-	if (splited_cmd.size()){
-		if(splited_cmd[0] == "BONG")
-			return;
-		if(splited_cmd[0] == "PASS" )
-			client_authen(fd, cmd);
-		else if (splited_cmd[0] == "NICK")
-			set_nickname(cmd,fd);
-		else if(splited_cmd[0] == "USER" )
-			set_username(cmd, fd);
-		else if (splited_cmd[0] == "QUIT")
-			QUIT(cmd,fd);
+	// Check if client exists before processing the command
+    Client *client = GetClient(fd);
+    if (client == NULL)
+        return;
+	
+	if(command == "BONG")
+		return;
+	if(command == "PASS" )
+		client_authen(fd, cmd);
+	else if (command == "NICK")
+		set_nickname(cmd,fd);
+	else if(command == "USER" )
+		set_username(cmd, fd);
+	else if (command == "QUIT")
+		QUIT(cmd,fd);
 
-		//The IRC protocol requires clients to send PASS, NICK, and USER commands to register with the server.
-		//Only after successful registration can clients execute other commands.
-		else if(isregistered(fd))
-		{
-			if (splited_cmd[0] == "KICK")
-				KICK(cmd, fd);
-			else if (splited_cmd[0] == "JOIN")
-				JOIN(cmd, fd);
-			else if (splited_cmd[0] == "TOPIC")
-				Topic(cmd, fd);
-			else if (splited_cmd[0] == "MODE")
-				mode_command(cmd, fd);
-			else if (splited_cmd[0] == "PART")
-				PART(cmd, fd);
-			else if (splited_cmd[0] == "PRIVMSG")
-				PRIVMSG(cmd, fd);
-			else if (splited_cmd[0] == "INVITE")
-				Invite(cmd,fd);
-			else if (splited_cmd.size())
-				_sendResponse(ERR_CMDNOTFOUND(GetClient(fd)->GetNickName(),splited_cmd[0]),fd);
-		}
+	//The IRC protocol requires clients to send PASS, NICK, and USER commands to register with the server.
+	//Only after successful registration can clients execute other commands.
+	else if(isClientRegistered(fd))
+	{
+		if (command == "KICK")
+			KICK(cmd, fd);
+		else if (command == "JOIN")
+			JOIN(cmd, fd);
+		else if (command == "TOPIC")
+			Topic(cmd, fd);
+		else if (command == "MODE")
+			mode_command(cmd, fd);
+		else if (command == "PART")
+			PART(cmd, fd);
+		else if (command == "PRIVMSG")
+			PRIVMSG(cmd, fd);
+		else if (command == "INVITE")
+			Invite(cmd,fd);
+		else
+			_sendResponse(ERR_CMDNOTFOUND(GetClient(fd)->GetNickName(),command),fd);
 	}
-	else if (!isregistered(fd))
+	else if (!isClientRegistered(fd))
 		_sendResponse(ERR_NOTREGISTERED(std::string("*")),fd);
 }
 

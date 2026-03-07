@@ -188,7 +188,7 @@ void	Server::close_fds(){
 // 	return true;
 // }
 
-bool Server::isregistered(int fd)
+bool Server::isClientRegistered(int fd)
 {
     Client* client = GetClient(fd);
     if (client && 
