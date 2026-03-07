@@ -178,51 +178,8 @@ void	Server::close_fds(){
 }
 
 
-//---------------//Server Methods
-//---------------//Parsing Methods
-std::vector<std::string> Server::split_recivedBuffer(std::string str)
-{
-	std::vector<std::string> vec;
-	std::istringstream stm(str);
-	std::string line;
 
-	//reads each line from the input stream (stm) into the variable line
-	/*
-	example:	 "NICK John\r\nUSER johnd 0 * :John Doe\r\nJOIN #channel1\r\n"
-	store it like this:
-			vec = {"NICK John", "USER johnd 0 * :John Doe", "JOIN #channel1"};
-	*/
-	while(std::getline(stm, line))
-	{
-		//find the position of the first occurrence of either '\r' or '\n' in the line
-		size_t pos = line.find_first_of("\r\n");
-		if(pos != std::string::npos)
-			line = line.substr(0, pos); //For each line, it removes the \r\n
-		vec.push_back(line);
-	}
-	return vec;
-}
 
-std::vector<std::string> Server::split_cmd(std::string& cmd)
-{
-	std::vector<std::string> vec;
-	std::istringstream stm(cmd);
-	std::string token;
-
-	/*     stm >> token
-	This code splits the input string (cmd) into individual tokens (words) based on whitespace and stores them in a vector (vec).
-	The >> operator reads from the stream until it encounters a whitespace character (space, tab, newline, etc.).
-	After extracting the token, the stream's internal pointer moves to the next word.
-	The loop continues until the end of the stream is reached.
-	{"heloo", "this"}
-	*/
-	while(stm >> token)
-	{
-		vec.push_back(token);
-		token.clear();
-	}
-	return vec;
-}
 
 // bool Server::notregistered(int fd)
 // {

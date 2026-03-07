@@ -6,7 +6,7 @@ CFLAGS = -Wall -Wextra -Werror  -std=c++98
 SRCS = main.cpp SRC/Authenti.cpp SRC/Channel.cpp SRC/Client.cpp SRC/Server.cpp \
 	CMD/INVITE.cpp CMD/JOIN.cpp CMD/KICK.cpp CMD/MODE.cpp CMD/PART.cpp CMD/PRIVMSG.cpp CMD/QUIT.cpp CMD/TOPIC.cpp  \
 	SRC/new_connection.cpp SRC/data_transform.cpp \
-	SRC/server_config.cpp SRC/set_sever_socket.cpp
+	SRC/server_config.cpp SRC/set_sever_socket.cpp / SRC/pars_cmds.cpp
 
 SRCS_BONUS = BONUS/main.cpp BONUS/player.cpp BONUS/bot.cpp
 

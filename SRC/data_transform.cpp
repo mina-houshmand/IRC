@@ -41,9 +41,8 @@ void Server::data_transform(int fd)
 		// Wait for complete command (must end with \r\n)
 		if(cli->GetCmds().find_first_of("\r\n") == std::string::npos)
 			return;
-
 		
-		cmd = split_recivedBuffer(cli->GetCmds());
+		cmd = split_recivedcmd(cli->GetCmds());
 		for(size_t i = 0; i < cmd.size(); i++)
 			this->parse_exec_cmd(cmd[i], fd);
 

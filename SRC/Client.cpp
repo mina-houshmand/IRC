@@ -25,32 +25,6 @@ Client &Client::operator=(Client const &src){
 	return *this;
 }
 
-//---------------//Getters
-bool Client::GetInviteChannel(std::string &ChName){
-	for (size_t i = 0; i < this->ChannelsInvite.size(); i++){
-		if (this->ChannelsInvite[i] == ChName)
-			return true;
-	}
-	return false;
-}
-std::string Client::GetNickName(){return this->nickname;}
-bool Client::GetLogedIn(){return this->logedin;}
-std::string Client::GetUserName(){return this->username;}
-std::string Client::GetCmds(){return buffer;}
-std::string Client::getIpAdd(){return ipadd;}
-std::string Client::getHostname(){
-	std::string hostname = this->GetNickName() + "!" + this->GetUserName();
-	return hostname;
-}
-
-
-void Client::SetClient_Fd(int fd){
-	if (fd < 0) {
-        throw std::invalid_argument("File descriptor cannot be negative");
-    }
-    this->fd = fd;
-}
-
 void Client::set_IpAddress(struct in_addr addr){
     char* ipStr = inet_ntoa(addr);
     if (ipStr == NULL) {
@@ -64,6 +38,38 @@ void Client::addToBuffer(std::string recived_data){
 	if (!recived_data.empty())
 		buffer.append(recived_data);
 }
+
+
+
+
+
+
+//---------------//Getters
+bool Client::GetInviteChannel(std::string &ChName){
+	for (size_t i = 0; i < this->ChannelsInvite.size(); i++){
+		if (this->ChannelsInvite[i] == ChName)
+			return true;
+	}
+	return false;
+}
+std::string Client::GetNickName(){return this->nickname;}
+bool Client::GetLogedIn(){return this->logedin;}
+std::string Client::GetUserName(){return this->username;}
+std::string Client::getIpAdd(){return ipadd;}
+std::string Client::getHostname(){
+	std::string hostname = this->GetNickName() + "!" + this->GetUserName();
+	return hostname;
+}
+
+void Client::SetClient_Fd(int fd){
+	if (fd < 0) {
+        throw std::invalid_argument("File descriptor cannot be negative");
+    }
+    this->fd = fd;
+}
+
+
+
 
 
 void Client::SetNickname(std::string& nickName){this->nickname = nickName;}

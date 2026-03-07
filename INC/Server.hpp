@@ -58,6 +58,12 @@ public:
 		RemoveFds(fd);
 		close(fd);
 	}
+	//parsing
+	std::vector<std::string> split_recivedcmd(std::string str);
+	std::vector<std::string> split_cmd(std::string &str);
+
+
+
 	//---------------//Getters
 	static bool isBotfull;
 	std::string GetPassword();
@@ -113,8 +119,6 @@ public:
 
 
 	//---------------//Parsing Methods
-	std::vector<std::string> split_recivedBuffer(std::string str);
-	std::vector<std::string> split_cmd(std::string &str);
 	void parse_exec_cmd(std::string &cmd, int fd);
 	//---------------//Authentification Methods
 	// bool BypassForBot(std::string cmd, int fd);

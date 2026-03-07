@@ -25,10 +25,11 @@ public:
 	Client &operator=(Client const &src);
 
 
-	void	SetClient_Fd(int fd);
-	void	set_IpAddress(struct in_addr addr);
-	int		GetFd(){return this->fd;}
-	bool	getRegistered(){return registered;}
+	void		SetClient_Fd(int fd);
+	void		set_IpAddress(struct in_addr addr);
+	int			GetFd(){return this->fd;}
+	bool		getRegistered(){return registered;}
+	std::string GetCmds(){return buffer;}
 
 
 	//---------------//Getters
@@ -38,7 +39,6 @@ public:
 	bool 		GetLogedIn();
 	std::string GetUserName();
 	std::string getIpAdd();
-	std::string GetCmds();
 	std::string getHostname();
 
 	void SetNickname(std::string& nickName);
