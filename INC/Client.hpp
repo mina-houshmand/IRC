@@ -38,13 +38,13 @@ public:
 	bool 		GetLogedIn();
 	std::string GetUserName();
 	std::string getIpAdd();
-	std::string getBuffer();
+	std::string GetCmds();
 	std::string getHostname();
 
 	void SetNickname(std::string& nickName);
 	void setLogedin(bool value);
 	void SetUsername(std::string& username);
-	void setBuffer(std::string recived);
+	void addToBuffer(std::string recived_data);
 	void setRegistered(bool value);
 	//---------------//Methods
 	void clearBuffer();

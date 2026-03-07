@@ -26,7 +26,6 @@ void Server::data_transform(int fd)
 	memset(buff, 0, sizeof(buff));
 	                               //**change name to GetClientByFd
 	Client *cli = GetClient(fd);
-
 	ssize_t bytes = recv(fd, buff, sizeof(buff) - 1 , 0);
 	if(bytes <= 0)
 	{
@@ -38,18 +37,13 @@ void Server::data_transform(int fd)
 	}
 	else
 	{ 
-		//the std::string constructor is automatically called to convert the char[] into a std::string.
-		//std::string(const char* s); SO we can pass char[] to setBuffer
-		cli->setBuffer(buff);
-
-		//\r\n  to detect the end of a command sent by the client.
-		//The IRC protocol specifies that commands must end with \r\n.
-		//If the buffer does not contain \r\n, the server assumes the command is incomplete and waits for more data.
-		if(cli->getBuffer().find_first_of("\r\n") == std::string::npos)
+		cli->addToBuffer(buff);
+		// Wait for complete command (must end with \r\n)
+		if(cli->GetCmds().find_first_of("\r\n") == std::string::npos)
 			return;
 
 		
-		cmd = split_recivedBuffer(cli->getBuffer());
+		cmd = split_recivedBuffer(cli->GetCmds());
 		for(size_t i = 0; i < cmd.size(); i++)
 			this->parse_exec_cmd(cmd[i], fd);
 
