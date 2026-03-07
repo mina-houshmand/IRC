@@ -1,4 +1,4 @@
-#include "Server.hpp"
+#include "../INC/Server.hpp"
 
 bool Server::isSocketReadable(const pollfd& pfd) {
     int readFlag = pfd.revents & POLLIN;  // Extract POLLIN bit

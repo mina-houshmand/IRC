@@ -78,11 +78,14 @@ public:
 	//---------------//Close and Signal Methods
 	static void SignalHandler(int signum);
 	void close_fds();
+
+
 	//---------------//Server Methods
 	void server_config(std::string port, std::string pass);
 	bool isSocketReadable(const pollfd& pfd);
 
 	void set_sever_socket();
+	void addSocketToPoll(int fd);
 
 	//new connection request
 	void new_connection_request();
@@ -96,6 +99,9 @@ public:
 
 	//data transform
 	void data_transform(int fd);
+
+
+
 	//---------------//Parsing Methods
 	std::vector<std::string> split_recivedBuffer(std::string str);
 	std::vector<std::string> split_cmd(std::string &str);
