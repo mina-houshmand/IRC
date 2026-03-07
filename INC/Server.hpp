@@ -62,12 +62,24 @@ public:
 	std::vector<std::string> split_recivedcmd(std::string str);
 	void handleClientCommand(std::string &cmd, int fd);
 	std::vector<std::string> split_cmd( std::string &str);
-	void Server::trimLeadingWhitespace(std::string &cmd);
-	void Server::cmd_toUpper(std::string &command);
+	void trimLeadingWhitespace(std::string &cmd);
+	void cmd_toUpper(std::string &command);
+
+
+	//printing stuff
+	void printStatus(const std::string& color, const std::string& type, int fd, const std::string& status){
+		std::cout << color << type << " <" << fd << "> " << status << WHI << std::endl;
+	}
+	void printMessage(const std::string& message){
+		std::cout << BLU << message << std::endl;
+	}
+	void printError(const std::string& message){
+		std::cerr << RED << "[ERROR] " << message << WHI << std::endl;
+	}
 
 
 
-
+	// ---------------------------------------------------------------------------------------
 	//---------------//Getters
 	static bool isBotfull;
 	std::string GetPassword();
@@ -168,18 +180,7 @@ public:
 	std::string gettopic(std::string& input);
 	int getpos(std::string &cmd);
 
-	//printing stuff
-	void printStatus(const std::string& color, const std::string& type, int fd, const std::string& status){
-		std::cout << color << type << " <" << fd << "> " << status << WHI << std::endl;
-	}
-	void printMessage(const std::string& message)
-	{
-		std::cout << BLU << message << std::endl;
-	}
-	void printError(const std::string& message)
-	{
-		std::cerr << RED << "[ERROR] " << message << WHI << std::endl;
-	}
+
 
 };
 

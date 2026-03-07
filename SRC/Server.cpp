@@ -21,21 +21,9 @@ Server &Server::operator=(Server const &src){
 	}
 	return *this;
 }
-//---------------//Getters
 
-/*The loop iterates through each Client object in the clients vector.
-and If a match is found, 
-it returns a pointer to the Client object using &this->clients[i].
-*/
-Client *Server::GetClient(int current_fd){
-	size_t clients_size = this->clients.size();
-	for (size_t i = 0; i < clients_size; i++){
-		int client_fd = this->clients[i].GetFd();
-		if (client_fd == current_fd)
-			return &this->clients[i];
-	}
-	return NULL;
-}
+
+
 Client *Server::GetClientNick(std::string nickname){
 	for (size_t i = 0; i < this->clients.size(); i++){
 		if (this->clients[i].GetNickName() == nickname)
@@ -177,27 +165,3 @@ void	Server::close_fds(){
 	}
 }
 
-
-
-
-
-// bool Server::notregistered(int fd)
-// {
-// 	if (!GetClient(fd) || GetClient(fd)->GetNickName().empty() || GetClient(fd)->GetUserName().empty() || GetClient(fd)->GetNickName() == "*"  || !GetClient(fd)->GetLogedIn())
-// 		return false;
-// 	return true;
-// }
-
-bool Server::isClientRegistered(int fd)
-{
-    Client* client = GetClient(fd);
-    if (client && 
-        !client->GetNickName().empty() && 
-        !client->GetUserName().empty() && 
-        client->GetNickName() != "*" && 
-        client->GetLogedIn())
-    {
-        return true;
-    }
-    return false;
-}

@@ -31,8 +31,9 @@ void Server::handleClientCommand(std::string &cmd, int fd)
 
 	// Check if client exists before processing the command
     Client *client = GetClient(fd);
-    if (client == NULL)
+    if (client == NULL){
         return;
+	}
 	
 	if(command == "BONG")
 		return;

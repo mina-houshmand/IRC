@@ -32,12 +32,16 @@ public:
 	std::string GetCmds(){return buffer;}
 
 
-	//---------------//Getters
 
-	bool GetInviteChannel(std::string &ChName);
-	std::string GetNickName();
-	bool 		GetLogedIn();
-	std::string GetUserName();
+	bool		GetInviteChannel(std::string &ChName);
+	std::string GetNickName(){return this->nickname;}
+	std::string GetUserName(){return this->username;}
+	bool 		GetLogedIn(){return this->logedin;}
+
+
+
+
+	// -------------------------------------------------------------------------------------------------
 	std::string getIpAdd();
 	std::string getHostname();
 

@@ -52,9 +52,6 @@ bool Client::GetInviteChannel(std::string &ChName){
 	}
 	return false;
 }
-std::string Client::GetNickName(){return this->nickname;}
-bool Client::GetLogedIn(){return this->logedin;}
-std::string Client::GetUserName(){return this->username;}
 std::string Client::getIpAdd(){return ipadd;}
 std::string Client::getHostname(){
 	std::string hostname = this->GetNickName() + "!" + this->GetUserName();
