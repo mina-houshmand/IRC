@@ -43,3 +43,10 @@
 #define ERR_NOTONCHANNEL(nickname, channelname) (": 442 " + nickname + " #" + channelname + " :is not on that channel" + CRLF)
 #define ERR_TOOMANYCHANNELS(nickname) (": 405 " + nickname + " :You have joined too many channels" + CRLF)
 #define ERR_TOOMANYTARGETS(nickname) (": 407 " + nickname + " :Too many targets. No more than 10 channels can be joined at once." + CRLF)
+
+// KICK command errors
+#define ERR_KICKNOTONCHANNEL(nickname, channelname) (": 442 " + nickname + " " + channelname + " :You're not on that channel" + CRLF)
+#define ERR_KICKCHANOPRIVSNEEDED(nickname, channelname) (": 482 " + nickname + " " + channelname + " :You're not channel operator" + CRLF)
+#define ERR_KICKUSERNOTINCHANNEL(nickname, channelname, target) (": 441 " + nickname + " " + channelname + " " + target + " :They aren't on that channel" + CRLF)
+
+// new replies

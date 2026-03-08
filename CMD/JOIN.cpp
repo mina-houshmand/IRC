@@ -209,8 +209,8 @@ token[1] = {"#channel2", "key2"}
 token[2] = {"#channel3", "key3"}
 */
 bool Server::TokenizeJoinCmd(std::vector<std::pair<std::string, std::string> > &token, std::string cmd, int fd){
-	std::vector<std::string> parts;
-    std::istringstream iss(cmd);
+	std::vector<std::string> parts = split_cmd(cmd);
+//    std::istringstream iss(cmd);
     std::string buff;
 
 	// Split the cmd into parts based on spaces and store them in the parts vector
@@ -219,9 +219,9 @@ bool Server::TokenizeJoinCmd(std::vector<std::pair<std::string, std::string> > &
 	std::string cmd = "JOIN #channel1,#channel2 key1,key2";
 	parts = {"JOIN", "#channel1,#channel2", "key1,key2"};
 	*/
-    while (iss >> buff) {
-        parts.push_back(buff);
-    }
+    // while (iss >> buff) {
+    //     parts.push_back(buff);
+    // }
 
 	// Ensure there are enough parameters
 	//join and one channal name is required at least(key is optioan)
