@@ -212,14 +212,12 @@ void Server::set_nickname(std::string cmd, int fd)
 	}
 }
 
-/* 
-    USER COMMAND
-*/
-
 static bool is_special_character_user(char c)
 {
-	if (c == '-' || c == '_' 
-		|| c == '.' || c == '~')
+	if (c == '-' 
+		|| c == '_' 
+		|| c == '.' 
+		|| c == '~')
 		return true;
 	return false;
 }
