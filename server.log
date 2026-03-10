@@ -1,5 +1,40 @@
 ---- SERVER ----
 [1;32mServer <3> Connected[0;37m
 Waiting to accept a connection...
-[1;32mClient <4> Connected[0;37m
 [1;32mClient <5> Connected[0;37m
+Received command from Client <5>: PASS
+DEBUG: Full command: PASS pass
+Authenticating client <5> with PASS command.
+DEBUG:Client <5> provided correct password.
+Received command from Client <5>: NICK
+DEBUG: Full command: NICK t1
+Received command from Client <5>: USER
+DEBUG: Full command: USER t1 0 0 :T1
+Processing USER command from Client <5>: USER t1 0 0 :T1
+Setting username for Client <5>.5
+Received command from Client <5>: JOIN
+DEBUG: Full command: JOIN #t1
+DEBUG: Processing JOIN command from Client <5>: JOIN #t1
+DEBUG: Client Count: 1
+DEBUG: Notifying Client <5> about joining channel ##t1
+[0;32m[sendTo_all][0m -> [0;34mAdmin FD:[0m 5 | [0;33mExcluded FD:[0m 5 | [0;35mSent:[0m :t1!t1@127.0.0.1 JOIN #t1
+
+DEBUG: IsUserAdmin: 0x5621b6c47930
+Received command from Client <5>: PRIVMSG
+DEBUG: Full command: PRIVMSG #t1 :Hello!
+[0;35m[PRIVMSG-CHAN][0m -> [0;36mChannel:[0m #t1 | [0;36mFrom:[0m t1 | [0;35mSent:[0m :t1!~t1@localhost PRIVMSG #t1 :Hello!
+
+[0;32m[sendTo_all][0m -> [0;34mAdmin FD:[0m 5 | [0;33mExcluded FD:[0m 5 | [0;35mSent:[0m :t1!~t1@localhost PRIVMSG #t1 :Hello!
+
+Received command from Client <5>: PART
+DEBUG: Full command: PART #t1 :Bye
+[0;33m[PART][0m -> [0;36mChannel:[0m #t1 | [0;36mLeaving:[0m t1 | [0;33mSent:[0m :t1!~t1@localhost PART #t1 :Bye
+
+[0;33m[PART][0m -> [0;36mReason:[0m :Bye
+[0;32m[sendTo_all][0m -> [0;34mAdmin FD:[0m 5 | [0;35mSent:[0m :t1!~t1@localhost PART #t1 :Bye
+
+Received command from Client <5>: QUIT
+DEBUG: Full command: QUIT
+[0;32m[QUIT][0m -> [0;36mUser:[0m t1 | [0;32mSent:[0m :t1!~t1@localhost QUIT
+
+[1;31mClient <5> Disconnected[0;37m

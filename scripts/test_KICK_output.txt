@@ -1,0 +1,40 @@
+Starting KICK tests... Suffix: 187
+
+=== TEST 1: KICK - not operator ===
+Setup: Join channel (not op), try to kick
+CMD: KICK #k1187 someone
+: 001  : Welcome to the IRC server!@!
+: 003 :This server was created on Mar 10 2026 at 15:19:59
+: NICK u1
+:u1 NICK u1 #
+: 001 u1 : Welcome to the IRC server!u1@u1!u1
+:u1!u1@127.0.0.1 JOIN #test 
+:u1!u1@127.0.0.1 JOIN #k1187
+: 353 u1 @ #k1187 :@u1
+: 366 u1 #k1187 :END of /NAMES list
+: 403 u1 #k1187 :No such channel
+Expected: 482 ... :You're not channel operator
+
+=== TEST 2: KICK - no channel ===
+CMD: KICK #nochannel user
+: 001  : Welcome to the IRC server!@!
+: 003 :This server was created on Mar 10 2026 at 15:19:59
+: NICK u2
+:u2 NICK u2 #
+: 001 u2 : Welcome to the IRC server!u2@u2!u2
+: 403 u2 #nochannel :No such channel
+Expected: 403 ... :No such channel
+
+=== TEST 3: KICK - need more params ===
+CMD: KICK #channel
+: 001  : Welcome to the IRC server!@!
+: 003 :This server was created on Mar 10 2026 at 15:19:59
+: NICK u3
+:u3 NICK u3 #
+: 001 u3 : Welcome to the IRC server!u3@u3!u3
+: 461 KICK :Not enough parameters
+Expected: 461 ... :Not enough parameters
+
+=== DONE ===
+Output: /mnt/c/42/irc_git/scripts/test_KICK_output.txt
+VS Code: Ctrl+O -> C:\42\irc_git\scripts\test_KICK_output.txt

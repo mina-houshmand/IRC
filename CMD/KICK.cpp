@@ -72,6 +72,13 @@ void	Server::KICK(std::string cmd, int fd)
 	if (!reason.empty())
 		ss << " " << reason;
 	ss << "\r\n";
+	
+	// DEBUG: Kick broadcast
+	std::cout << "\033[0;31m[KICK]\033[0m -> " << "\033[0;36mChannel:\033[0m " << channelName 
+	          << " | " << "\033[0;36mKicked:\033[0m " << targetUser 
+	          << " | " << "\033[0;36mBy:\033[0m " << GetClient(fd)->GetNickName() 
+	          << " | " << "\033[0;31mSent:\033[0m " << ss.str() << std::endl;
+	
 	channel->sendTo_all(ss.str());
 
 	// 7. Remove target user from channel

@@ -1,0 +1,50 @@
+Starting PART tests...
+Unique suffix: 330
+
+=== OBSERVER CONNECTS ===
+nick: obs330
+joins: #parttest, #watch
+
+=== TEST 1: PART with reason ===
+
+SENDER: PART #parttest :Goodbye!
+: 001  : Welcome to the IRC server!@!
+: 003 :This server was created on Mar 10 2026 at 15:19:59
+: NICK t1_330
+:t1 NICK t1 #
+: 001 t1_330 : Welcome to the IRC server!t1@t1_330!t1
+:t1_330!t1@127.0.0.1 JOIN #test 
+:t1_330!t1@127.0.0.1 JOIN #parttest
+: 353 t1_330 @ #parttest :@obs330 t1_330
+: 366 t1_330 #parttest :END of /NAMES list
+:t1_330!~t1@localhost PART #parttest :Goodbye!
+
+OBSERVER SEES:
+  :t1_330!~t1@localhost PART #parttest :Goodbye!
+
+=== TEST 2: PART broadcast ===
+
+SENDER: PART #watch :Leaving now
+: 001  : Welcome to the IRC server!@!
+: 003 :This server was created on Mar 10 2026 at 15:19:59
+: NICK t2_330
+:t2 NICK t2 #
+: 001 t2_330 : Welcome to the IRC server!t2@t2_330!t2
+:t2_330!t2@127.0.0.1 JOIN #test 
+:t2_330!t2@127.0.0.1 JOIN #watch
+: 353 t2_330 @ #watch :@obs330 t2_330
+: 366 t2_330 #watch :END of /NAMES list
+:t2_330!~t2@localhost PART #watch :Leaving now
+
+OBSERVER SEES:
+  :t2_330!~t2@localhost PART #watch :Leaving now
+
+=== SUMMARY ===
+
+Observer received broadcast messages (shown above in blue)
+Format: :nick!~user@localhost PART #channel :reason
+
+Output saved to: /mnt/c/42/irc_git/scripts/test_PART_output.txt
+
+View in VS Code: Ctrl+O → C:\42\irc_git\scripts	est_PART_output.txt
+

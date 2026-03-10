@@ -1,0 +1,87 @@
+Starting TOPIC tests...
+Unique suffix: 314
+
+=== OBSERVER CONNECTS ===
+nick: obs314
+joins: #topic9, #topicchan
+
+=== TEST 1: TOPIC set ===
+
+SETTER: TOPIC #topic9 :Welcome to the channel!
+: 001  : Welcome to the IRC server!@!
+: 003 :This server was created on Mar 10 2026 at 15:19:59
+: NICK u1_314
+:u1 NICK u1 #
+: 001 u1_314 : Welcome to the IRC server!u1@u1_314!u1
+:u1_314!u1@127.0.0.1 JOIN #test 
+:u1_314!u1@127.0.0.1 JOIN #topic9
+: 353 u1_314 @ #topic9 :@obs314 u1_314
+: 366 u1_314 #topic9 :END of /NAMES list
+:u1_314!~u1@localhost TOPIC #topic9 :Welcome to the channel!
+
+OBSERVER SEES:
+  :u1_314!~u1@localhost TOPIC #topic9 :Welcome to the channel!
+
+=== TEST 2: TOPIC query ===
+
+SETTER: TOPIC #topic9
+: 001  : Welcome to the IRC server!@!
+: 003 :This server was created on Mar 10 2026 at 15:19:59
+: NICK u2_314
+:u2 NICK u2 #
+: 001 u2_314 : Welcome to the IRC server!u2@u2_314!u2
+:u2_314!u2@127.0.0.1 JOIN #test 
+:u2_314!u2@127.0.0.1 JOIN #topic9
+: 332 u2_314 #topic9 :Welcome to the channel!
+: 353 u2_314 @ #topic9 :@obs314 u2_314
+: 366 u2_314 #topic9 :END of /NAMES list
+: 332 u2_314 #topic9 :Welcome to the channel!
+
+SENDER RECEIVES (topic query response):
+  : 332 u2_314 #topic9 :Welcome to the channel!
+
+=== TEST 3: TOPIC change broadcast ===
+
+SETTER: TOPIC #topicchan :New topic everyone!
+: 001  : Welcome to the IRC server!@!
+: 003 :This server was created on Mar 10 2026 at 15:19:59
+: NICK u3_314
+:u3 NICK u3 #
+: 001 u3_314 : Welcome to the IRC server!u3@u3_314!u3
+:u3_314!u3@127.0.0.1 JOIN #test 
+:u3_314!u3@127.0.0.1 JOIN #topicchan
+: 353 u3_314 @ #topicchan :@obs314 u3_314
+: 366 u3_314 #topicchan :END of /NAMES list
+:u3_314!~u3@localhost TOPIC #topicchan :New topic everyone!
+
+OBSERVER SEES:
+  :u3_314!~u3@localhost TOPIC #topicchan :New topic everyone!
+
+=== TEST 4: TOPIC query (no topic) ===
+
+SETTER: TOPIC #emptytopic
+: 001  : Welcome to the IRC server!@!
+: 003 :This server was created on Mar 10 2026 at 15:19:59
+: NICK u4_314
+:u4 NICK u4 #
+: 001 u4_314 : Welcome to the IRC server!u4@u4_314!u4
+:u4_314!u4@127.0.0.1 JOIN #test 
+:u4_314!u4@127.0.0.1 JOIN #emptytopic
+: 353 u4_314 @ #emptytopic :@u4_314
+: 366 u4_314 #emptytopic :END of /NAMES list
+: 331 u4_314 emptytopic :No topic is set
+
+SENDER RECEIVES (no topic response):
+  : 331 u4_314 #emptytopic :No topic is set
+
+=== SUMMARY ===
+
+Observer received TOPIC broadcasts (shown above in blue)
+Topic change format: :nick!~user@localhost TOPIC #channel :new topic
+Topic query response: : 332 nick #channel :current topic
+No topic response: : 331 nick #channel :No topic is set
+
+Output saved to: /mnt/c/42/irc_git/scripts/test_TOPIC_output.txt
+
+View in VS Code: Ctrl+O → C:\42\irc_git\scripts	est_TOPIC_output.txt
+
