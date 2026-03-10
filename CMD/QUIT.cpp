@@ -28,6 +28,39 @@ std::string Server::ParseQuitReason(std::string cmd)
     return reason;
 }
 
+
+
+void Server::QUIT(std::string cmd, int fd)
+{
+
+	std::string reason = extractQuitReason(cmd);
+
+	for (size_t i = 0; i < channels.size(); i++)
+	{
+		if (channels[i].get_client(fd)){
+			channels[i].remove_client(fd);
+			//i????
+			if (channels[i].GetClientsNumber() == 0)
+				channels.erase(channels.begin() + i);
+
+			else{ //notify other clients in the channel that this client has quit
+				std::string rpl = ":" + GetClient(fd)->GetNickName() + "!~" + GetClient(fd)->GetUserName() + "@localhost QUIT " + reason + "\r\n";
+				channels[i].sendTo_all(rpl);
+			}
+		}
+		else if (channels[i].get_admin(fd)){
+			channels[i].remove_admin(fd);
+			if (channels[i].GetClientsNumber() == 0)
+				channels.erase(channels.begin() + i);
+			else{
+				std::string rpl = ":" + GetClient(fd)->GetNickName() + "!~" + GetClient(fd)->GetUserName() + "@localhost QUIT " + reason + "\r\n";
+				channels[i].sendTo_all(rpl);
+			}
+		}
+	}
+	printStatus(RED, "Client", fd, "Disconnected");
+	disconnectClient(fd);
+}
 // Build and broadcast quit message to all channels
 void Server::BroadcastQuit(int fd, const std::string &reason)
 {

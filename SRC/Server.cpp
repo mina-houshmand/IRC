@@ -2,7 +2,7 @@
 #include <iostream>
 
 bool Server::isBotfull = false;
-Server::Server(){this->server_fdsocket = -1;}
+Server::Server(){this->server_socket_fd = -1;}
 Server::~Server(){}
 Server::Server(Server const &src){*this = src;}
 Server &Server::operator=(Server const &src){
@@ -13,7 +13,7 @@ Server &Server::operator=(Server const &src){
 		struct pollfd new_cli;
 		*/
 		this->port = src.port;
-		this->server_fdsocket = src.server_fdsocket;
+		this->server_socket_fd = src.server_socket_fd;
 		this->password = src.password;
 		this->clients = src.clients;
 		this->channels = src.channels;
@@ -22,21 +22,9 @@ Server &Server::operator=(Server const &src){
 	}
 	return *this;
 }
-//---------------//Getters
-int Server::GetPort(){return this->port;}
-int Server::GetFd(){return this->server_fdsocket;}
 
-/*The loop iterates through each Client object in the clients vector.
-and If a match is found, 
-it returns a pointer to the Client object using &this->clients[i].
-*/
-Client *Server::GetClient(int fd){
-	for (size_t i = 0; i < this->clients.size(); i++){
-		if (this->clients[i].GetFd() == fd)
-			return &this->clients[i];
-	}
-	return NULL;
-}
+
+
 Client *Server::GetClientNick(std::string nickname){
 	for (size_t i = 0; i < this->clients.size(); i++){
 		if (this->clients[i].GetNickName() == nickname)
@@ -55,7 +43,7 @@ Channel *Server::GetChannel(std::string name)
 }
 //---------------//Getters
 //---------------//Setters
-void Server::SetFd(int fd){this->server_fdsocket = fd;}
+void Server::SetFd(int fd){this->server_socket_fd = fd;}
 void Server::SetPort(int port){this->port = port;}
 void Server::SetPassword(std::string password){this->password = password;}
 std::string Server::GetPassword(){return this->password;}
@@ -137,16 +125,26 @@ void Server::_sendResponse(std::string response, int fd)
 //---------------//Send Methods
 //---------------//Close and Signal Methods
 bool Server::Signal = false;
+
+//The handler must have this signature:
+// void handler(int signal);
+
+/*
+If the signal interrupts code that was already using std::cout, this can cause:
+Deadlocks
+Undefined behavior
+*/
 void Server::SignalHandler(int signum)
 {
 	(void)signum;
-	std::cout << std::endl << "Signal Received!" << std::endl;
+	const char* msg = "\nSignal Received!\n";
+    write(STDOUT_FILENO, msg, 18);
 	Server::Signal = true;
 }
 
 void	Server::close_fds(){
 	for(size_t i = 0; i < clients.size(); i++){
-		std::cout << RED << "Client <" << clients[i].GetFd() << "> Disconnected" << WHI << std::endl;
+		printStatus(RED, "Client", clients[i].GetFd(), "Disconnected");
 		close(clients[i].GetFd());
 	}
 	if (server_fdsocket != -1){	
@@ -721,3 +719,9 @@ void Server::parse_exec_cmd(std::string &cmd, int fd)
 	else if (!isregistered(fd))
 		_sendResponse(ERR_NOTREGISTERED(std::string("*")),fd);
 }
+	if (server_socket_fd != -1){
+		printStatus(RED, "Server", server_socket_fd, "Disconnected");
+		close(server_socket_fd);
+	}
+}
+
