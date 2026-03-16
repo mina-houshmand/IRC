@@ -1,6 +1,6 @@
 #include "../INC/Server.hpp"
 #include <iostream>
-
+//this is the main file that contains the implementation of the server class and its methods
 bool Server::isBotfull = false;
 Server::Server(){this->server_socket_fd = -1;}
 Server::~Server(){}
