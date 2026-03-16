@@ -155,9 +155,9 @@ public:
 	void	HELP(int fd);
 	//---------------------------//PART CMD
 	void	PART(std::string cmd, int fd);
+	// int		SplitCmdPart(std::string cmd, std::vector<std::string> &tmp, std::string &reason, int fd);
 	bool	SplitCmdPart(std::string cmd, std::vector<std::string> &tmp, std::string &reason, int fd);
 	void	ProcessPartChannel(const std::string &channelName, int fd, const std::string &reason);
-
 	//---------------------------//CKIK CMD
 	void	KICK(std::string cmd, int fd);
 	//---------------------------//PRIVMSG CMD

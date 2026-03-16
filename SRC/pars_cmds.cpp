@@ -28,6 +28,9 @@ void Server::handleClientCommand(std::string &cmd, int fd)
 
 	std::string command = tokens[0];
 	cmd_toUpper(command);
+	
+	std::cout << "Received command from Client <" << fd << ">: " << command << std::endl;
+	std::cout << "DEBUG: Full command: " << cmd << std::endl;
 
 	// Check if client exists before processing the command
     Client *client = GetClient(fd);
