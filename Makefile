@@ -1,18 +1,20 @@
 NAME_BOUNUS = bot
 NAME = ircserv
 CC = c++
-CFLAGS = -Wall -Wextra -Werror  -std=c++98
-
+CFLAGS = -Wall -Wextra -Werror -std=c++98 -g
+DEPFLAGS = -MMD -MP
 SRCS = main.cpp SRC/Authenti.cpp SRC/Channel.cpp SRC/Client.cpp SRC/Server.cpp \
-	CMD/INVITE.cpp CMD/JOIN.cpp CMD/KICK.cpp CMD/MODE.cpp CMD/PART.cpp CMD/PRIVMSG.cpp CMD/QUIT.cpp CMD/TOPIC.cpp  \
+	CMD/INVITE.cpp CMD/JOIN.cpp CMD/KICK.cpp CMD/MODE.cpp CMD/PART.cpp CMD/PRIVMSG.cpp CMD/QUIT.cpp CMD/TOPIC.cpp \
 	SRC/new_connection.cpp SRC/data_transform.cpp \
 	SRC/server_config.cpp SRC/set_sever_socket.cpp SRC/pars_cmds.cpp \
 	SRC/check_registaration.cpp
 
 SRCS_BONUS = BONUS/main.cpp BONUS/player.cpp BONUS/bot.cpp
 
-OBJS = $(SRCS:.cpp=.o)
-OBJS_BONUS = $(SRCS_BONUS:.cpp=.o)
+OBJSDIR = objs
+
+OBJS = $(addprefix $(OBJSDIR)/,$(SRCS:.cpp=.o))
+OBJS_BONUS = $(addprefix $(OBJSDIR)/,$(SRCS_BONUS:.cpp=.o))
 
 all: $(NAME)
 
@@ -22,11 +24,17 @@ $(NAME): $(OBJS)
 bonus: $(OBJS_BONUS)
 	@$(CC) $(CFLAGS) -o $(NAME_BOUNUS) $(OBJS_BONUS)
 
-%.o: %.cpp INC/Server.hpp INC/Client.hpp INC/Channel.hpp INC/replies.hpp INC/Bot.hpp INC/Player.hpp
-	$(CC) $(CFLAGS) -c $< -o $@
+
+$(OBJSDIR)/%.o: %.cpp
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) $(DEPFLAGS) -c $< -o $@
+
+
+-include $(OBJS:.o=.d) $(OBJS_BONUS:.o=.d)
+
 
 clean:
-	@rm -f $(OBJS) $(OBJS_BONUS)
+	@rm -rf $(OBJSDIR)
 
 fclean: clean
 	@rm -f $(NAME) $(NAME_BOUNUS) a.out

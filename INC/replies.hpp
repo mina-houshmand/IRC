@@ -2,7 +2,8 @@
 
 #define CRLF "\r\n"
 
-#define RPL_CONNECTED(nickname) (": 001 " + nickname + " : Welcome to the IRC server!" + CRLF)
+#define RPL_CONNECTED(nickname, username, hostname) (": 001 " + nickname + " : Welcome to the IRC server!" + username + "@" + hostname + CRLF)
+#define RPL_CREATED() (": 003 :This server was created on " + std::string(__DATE__) + " at " + std::string(__TIME__) + CRLF)
 #define RPL_UMODEIS(hostname, channelname, mode, user)  ":" + hostname + " MODE " + channelname + " " + mode + " " + user + CRLF
 #define RPL_CREATIONTIME(nickname, channelname, creationtime) ": 329 " + nickname + " #" + channelname + " " + creationtime + CRLF
 #define RPL_CHANNELMODES(nickname, channelname, modes) ": 324 " + nickname + " #" + channelname + " " + modes + CRLF
@@ -12,6 +13,8 @@
 #define RPL_NAMREPLY(nickname, channelname, clientslist) (": 353 " + nickname + " @ #" + channelname + " :" + clientslist + CRLF)
 #define RPL_ENDOFNAMES(nickname, channelname) (": 366 " + nickname + " #" + channelname + " :END of /NAMES list" + CRLF)
 #define RPL_TOPICIS(nickname, channelname, topic) (": 332 " + nickname + " #" +channelname + " :" + topic + "\r\n")
+#define RPL_NAMECHANGE(oldnickname, newnickname, channelname) (":" + oldnickname + " NICK " + newnickname + " #" + channelname + CRLF)
+#define RPL_INVITING(nickname, invitedNickname, channelname) (": 341 " + nickname + " " + invitedNickname + " #" + channelname + CRLF)
 
 ///////// ERRORS ////////////////
 #define ERR_ERRONEUSUSERNAME(username) (": 432 " + username + " :Erroneous username")
@@ -22,7 +25,7 @@
 #define ERR_NOTENOUGHPARAM(nickname) (": 461 " + nickname + " :Not enough parameters." + CRLF)
 #define ERR_CHANNELNOTFOUND(nickname, channelname) (": 403 " + nickname + " " + channelname + " :No such channel" + CRLF)
 #define ERR_NOTOPERATOR(channelname) (": 482 #" + channelname + " :You're not a channel operator" + CRLF)
-#define ERR_NOSUCHNICK(channelname, name) (": 401 #" + channelname + " " + name + " :No such nick/channel" + CRLF )
+#define ERR_NOSUCHNICK(nickname, name) (": 401 " + nickname + " " + name + " :No such nick/channel" + CRLF )
 #define ERR_INCORPASS(nickname) (": 464 " + nickname + " :Password incorrect !" + CRLF )
 #define ERR_ALREADYREGISTERED(nickname) (": 462 " + nickname + " :You may not reregister !" + CRLF )
 #define ERR_NONICKNAME(nickname) (": 431 " + nickname + " :No nickname given" + CRLF )
@@ -33,3 +36,24 @@
 #define ERR_BADCHANNELKEY(nickname, channelname) (": 475 " + nickname + " " + channelname + " :Cannot join channel (+k)" + CRLF)
 #define ERR_INVITEONLYCHAN(nickname, channelname) (": 473 " + nickname + " " + channelname + " :Cannot join channel (+i)" + CRLF)
 #define ERR_CHANNELISFULL(nickname, channelname) (": 471 " + nickname + " " + channelname + " :Cannot join channel (+l)" + CRLF)
+#define ERR_NOTENOUGHPARAMNAME(username) (": 461 " + username + " :Not enough parameters." + CRLF)
+#define ERR_USERONCHANNEL(nickname, channelname) (": 443 " + nickname + " #" + channelname + " :is already on channel" + CRLF)
+#define ERR_NEEDMOREPARAMS(command) (": 461 " + command + " :Not enough parameters" + CRLF)
+#define ERR_NOSUCHCHANNEL(nickname, channelname) (": 403 " + nickname + " " + channelname + " :No such channel" + CRLF)
+#define ERR_NOTONCHANNEL(nickname, channelname) (": 442 " + nickname + " #" + channelname + " :is not on that channel" + CRLF)
+#define ERR_TOOMANYCHANNELS(nickname) (": 405 " + nickname + " :You have joined too many channels" + CRLF)
+#define ERR_TOOMANYTARGETS(nickname) (": 407 " + nickname + " :Too many targets. No more than 10 channels can be joined at once." + CRLF)
+
+// KICK command errors
+#define ERR_KICKNOTONCHANNEL(nickname, channelname) (": 442 " + nickname + " " + channelname + " :You're not on that channel" + CRLF)
+#define ERR_KICKCHANOPRIVSNEEDED(nickname, channelname) (": 482 " + nickname + " " + channelname + " :You're not channel operator" + CRLF)
+#define ERR_KICKUSERNOTINCHANNEL(nickname, channelname, target) (": 441 " + nickname + " " + channelname + " " + target + " :They aren't on that channel" + CRLF)
+
+// PRIVMSG command errors
+#define ERR_CANNOTSENDTOCHAN(nickname, channelname) (": 404 " + nickname + " " + channelname + " :Cannot send to channel" + CRLF)
+
+// TOPIC command errors
+#define ERR_CHANOPRIVSNEEDED(nickname, channelname) (": 482 " + nickname + " " + channelname + " :You're not channel operator" + CRLF)
+#define RPL_NOTOPIC(nickname, channelname) (": 331 " + nickname + " " + channelname + " :No topic is set" + CRLF)
+
+// new replies

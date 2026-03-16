@@ -1,4 +1,10 @@
 #include "../INC/Channel.hpp"
+#include <iostream>
+#include <cerrno>
+#include <cstring>
+#include <sys/socket.h>
+#include <ctime>
+#include <sstream>
 
 Channel::Channel(){
 	this->invit_only = 0;
@@ -125,6 +131,8 @@ Client *Channel::get_client(int fd){
 	return NULL;
 }
 Client *Channel::get_admin(int fd){
+	if (admins.empty())
+		return NULL;
 	for (std::vector<Client>::iterator it = admins.begin(); it != admins.end(); ++it){
 		if (it->GetFd() == fd)
 			return &(*it);
@@ -201,27 +209,49 @@ for each client in the channel (both admins and regular clients)
 */
 void Channel::sendTo_all(std::string rpl1)
 {
-	for(size_t i = 0; i < admins.size(); i++){
+	// ANSI color codes for debug output
+	const std::string GREEN = "\033[0;32m";
+	const std::string BLUE = "\033[0;34m";
+	const std::string MAGENTA = "\033[0;35m";
+	const std::string NC = "\033[0m";
 
-	    //rpl1.c_str() -> converts the std::string rpl1 to a C-style string (const char*), which is required by send().
+	for(size_t i = 0; i < admins.size(); i++){
+		std::cout << GREEN << "[sendTo_all]" << NC << " -> " << BLUE << "Admin FD:" << NC << " " << admins[i].GetFd() 
+		          << " | " << MAGENTA << "Sent:" << NC << " " << rpl1 << std::endl;
 		if(send(admins[i].GetFd(), rpl1.c_str(), rpl1.size(),0) == -1)
-			std::cerr << "send() faild" << std::endl;
+			std::cerr << "send() failed (fd=" << admins[i].GetFd() << "): " << std::strerror(errno) << std::endl;
 	}
 	for(size_t i = 0; i < clients.size(); i++){
+		std::cout << GREEN << "[sendTo_all]" << NC << " -> " << BLUE << "Client FD:" << NC << " " << clients[i].GetFd() 
+		          << " | " << MAGENTA << "Sent:" << NC << " " << rpl1 << std::endl;
 		if(send(clients[i].GetFd(), rpl1.c_str(), rpl1.size(),0) == -1)
-			std::cerr << "send() faild" << std::endl;
+			std::cerr << "send() failed (fd=" << clients[i].GetFd() << "): " << std::strerror(errno) << std::endl;
 	}
 }
+
 void Channel::sendTo_all(std::string rpl1, int fd)
 {
+	// ANSI color codes for debug output
+	const std::string GREEN = "\033[0;32m";
+	const std::string BLUE = "\033[0;34m";
+	const std::string YELLOW = "\033[0;33m";
+	const std::string MAGENTA = "\033[0;35m";
+	const std::string NC = "\033[0m";
+
 	for(size_t i = 0; i < admins.size(); i++){
+		std::cout << GREEN << "[sendTo_all]" << NC << " -> " << BLUE << "Admin FD:" << NC << " " << admins[i].GetFd() 
+		          << " | " << YELLOW << "Excluded FD:" << NC << " " << fd 
+		          << " | " << MAGENTA << "Sent:" << NC << " " << rpl1 << std::endl;
 		if(admins[i].GetFd() != fd)
 			if(send(admins[i].GetFd(), rpl1.c_str(), rpl1.size(),0) == -1)
-				std::cerr << "send() faild" << std::endl;
+				std::cerr << "send() failed" << std::endl;
 	}
 	for(size_t i = 0; i < clients.size(); i++){
+		std::cout << GREEN << "[sendTo_all]" << NC << " -> " << BLUE << "Client FD:" << NC << " " << clients[i].GetFd() 
+		          << " | " << YELLOW << "Excluded FD:" << NC << " " << fd 
+		          << " | " << MAGENTA << "Sent:" << NC << " " << rpl1 << std::endl;
 		if(clients[i].GetFd() != fd)
 			if(send(clients[i].GetFd(), rpl1.c_str(), rpl1.size(),0) == -1)
-				std::cerr << "send() faild" << std::endl;
+				std::cerr << "send() failed" << std::endl;
 	}
 }

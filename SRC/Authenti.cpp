@@ -1,4 +1,5 @@
 #include "../INC/Server.hpp"
+#include <iostream>
 
 /* 
 *   PASS COMMAND
@@ -8,7 +9,7 @@ void Server::client_authen(int fd, std::string cmd)
 {
 	Client *cli = GetClient(fd);
 
-	std::cout << cli->GetFd() << " " << cli->GetUserName() << " cli" << std::endl; 
+	std::cout << "Authenticating client <" << fd << "> with PASS command." << std::endl;
 	//trim the word "pass" from the command
 	cmd = cmd.substr(4);
 
@@ -34,8 +35,12 @@ void Server::client_authen(int fd, std::string cmd)
 		./irc <ip> <password>
 		and the "pass" is the one the client send it to the server to connect
 		*/
-		if(pass == password)
+		if(pass == password){
+			std::cout << "DEBUG:Client <" << fd << "> provided correct password." << std::endl;
+			_sendResponse(RPL_CONNECTED(cli->GetNickName(), cli->GetUserName(), cli->getHostname()), fd);
 			cli->setRegistered(true);
+			_sendResponse(RPL_CREATED(), fd);
+		}
 		else
             _sendResponse(ERR_INCORPASS(std::string("*")), fd);
 	}
@@ -167,6 +172,7 @@ void Server::set_nickname(std::string cmd, int fd)
 			std::string oldnick = cli->GetNickName();
 
 			//change the nickname for that client
+			_sendResponse(RPL_NICKCHANGE(oldnick, cmd), fd);
 			cli->SetNickname(cmd);
 
 			// Update the nickname in all channels
@@ -190,7 +196,7 @@ void Server::set_nickname(std::string cmd, int fd)
 				if(oldnick == "*" && !cli->GetUserName().empty())
 				{
 					cli->setLogedin(true);
-					_sendResponse(RPL_CONNECTED(cli->GetNickName()), fd);
+					_sendResponse(RPL_CONNECTED(cli->GetNickName(), cli->GetUserName(), cli->getHostname()), fd);
 					_sendResponse(RPL_NICKCHANGE(cli->GetNickName(),cmd), fd);
 				}
 				else
@@ -208,7 +214,7 @@ void Server::set_nickname(std::string cmd, int fd)
 	if(cli && cli->getRegistered() && !cli->GetUserName().empty() && !cli->GetNickName().empty() && cli->GetNickName() != "*" && !cli->GetLogedIn())
 	{
 		cli->setLogedin(true);
-		_sendResponse(RPL_CONNECTED(cli->GetNickName()), fd);
+		_sendResponse(RPL_CONNECTED(cli->GetNickName(), cli->GetUserName(), cli->getHostname()), fd);
 	}
 }
 
@@ -247,11 +253,13 @@ static bool is_validUsername(std::string& username)
 void	Server::set_username(std::string& cmd, int fd)
 {
 	std::vector<std::string> splited_cmd = split_cmd(cmd);
-
+	std::cout << "Processing USER command from Client <" << fd << ">: " << cmd << std::endl;
 	Client *cli = GetClient(fd); 
 
-
-	if((cli && splited_cmd.size() < 5)){
+	//Parameters should be at least 5 (USER + 4 parameters)
+	//<ho>
+	std::cout << "Setting username for Client <" << fd << ">." << splited_cmd.size() << std::endl;
+	if((cli && splited_cmd.size() < 5) || (!cli && splited_cmd.size() < 5)){
 		_sendResponse(ERR_NOTENOUGHPARAM(cli->GetNickName()), fd); return; 
 	}
 
@@ -268,6 +276,7 @@ void	Server::set_username(std::string& cmd, int fd)
 	else{
 		if (is_validUsername(splited_cmd[1])){
 			cli->SetUsername(splited_cmd[1]);
+			_sendResponse(RPL_NAMECHANGE(cli->GetUserName(), splited_cmd[1], ""), fd);
 		}else{
 			_sendResponse(ERR_ERRONEUSUSERNAME(splited_cmd[1]), fd); return;
 		}
@@ -275,6 +284,6 @@ void	Server::set_username(std::string& cmd, int fd)
 	//check if the client is fully registered
 	if(cli && cli->getRegistered() && !cli->GetUserName().empty() && !cli->GetNickName().empty() && cli->GetNickName() != "*"  && !cli->GetLogedIn()){
 		cli->setLogedin(true);
-		_sendResponse(RPL_CONNECTED(cli->GetNickName()), fd);
+		_sendResponse(RPL_CONNECTED(cli->GetNickName(), cli->GetUserName(), cli->getHostname()), fd);
 	}
 }
