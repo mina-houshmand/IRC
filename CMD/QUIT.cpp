@@ -78,6 +78,84 @@ void Server::QUIT(std::string cmd, int fd)
     // 1. Parse optional quit reason
     std::string reason = ParseQuitReason(cmd);
 
+	std::string reason = extractQuitReason(cmd);
+
+	for (size_t i = 0; i < channels.size(); i++)
+	{
+		if (channels[i].get_client(fd)){
+			channels[i].remove_client(fd);
+			//i????
+			if (channels[i].GetClientsNumber() == 0)
+				channels.erase(channels.begin() + i);
+
+			else{ //notify other clients in the channel that this client has quit
+				std::string rpl = ":" + GetClient(fd)->GetNickName() + "!~" + GetClient(fd)->GetUserName() + "@localhost QUIT " + reason + "\r\n";
+				channels[i].sendTo_all(rpl);
+			}
+		}
+		else if (channels[i].get_admin(fd)){
+			channels[i].remove_admin(fd);
+			if (channels[i].GetClientsNumber() == 0)
+				channels.erase(channels.begin() + i);
+			else{
+				std::string rpl = ":" + GetClient(fd)->GetNickName() + "!~" + GetClient(fd)->GetUserName() + "@localhost QUIT " + reason + "\r\n";
+				channels[i].sendTo_all(rpl);
+			}
+		}
+	}
+	printStatus(RED, "Client", fd, "Disconnected");
+	disconnectClient(fd);
+}
+// Build and broadcast quit message to all channels
+void Server::BroadcastQuit(int fd, const std::string &reason)
+{
+    Client *client = GetClient(fd);
+    if (!client)
+        return;
+
+    std::string clientNick = client->GetNickName();
+    std::string userName = client->GetUserName();
+
+    // Build quit message
+    std::stringstream ss;
+    ss << ":" << clientNick << "!~" << userName << "@localhost QUIT";
+    if (!reason.empty())
+        ss << " " << reason;
+    ss << "\r\n";
+
+    std::string quitMsg = ss.str();
+
+    // DEBUG: Quit broadcast
+    std::cout << "\033[0;32m[QUIT]\033[0m -> " << "\033[0;36mUser:\033[0m " << clientNick 
+              << " | " << "\033[0;32mSent:\033[0m " << quitMsg << std::endl;
+    if (!reason.empty())
+        std::cout << "\033[0;32m[QUIT]\033[0m -> " << "\033[0;36mReason:\033[0m " << reason << std::endl;
+
+    // Send to all channels the user is a member of
+    for (size_t i = 0; i < this->channels.size(); i++)
+    {
+        if (this->channels[i].get_client(fd) || this->channels[i].get_admin(fd))
+        {
+            this->channels[i].sendTo_all(quitMsg, fd);
+        }
+    }
+}
+
+/*
+QUIT [<reason>]
+
+Rules:
+|__ Reason is optional
+|__ Broadcast QUIT message to all channel members
+|__ Remove user from all channels
+|__ Delete empty channels
+|__ Close client connection
+*/
+void Server::QUIT(std::string cmd, int fd)
+{
+    // 1. Parse optional quit reason
+    std::string reason = ParseQuitReason(cmd);
+
     // 2-3. Build and broadcast quit message to all channels
     BroadcastQuit(fd, reason);
 

@@ -151,6 +151,8 @@ public:
 	int 	numberOfChannelsThatJoined(const std::string &nickName);
 	void 	NotifyJoin(Client *client, Channel &channel);
 
+	//---------------------------//HELP CMD
+	void	HELP(int fd);
 	//---------------------------//PART CMD
 	void	PART(std::string cmd, int fd);
 	// int		SplitCmdPart(std::string cmd, std::vector<std::string> &tmp, std::string &reason, int fd);
@@ -160,7 +162,6 @@ public:
 	void	KICK(std::string cmd, int fd);
 	//---------------------------//PRIVMSG CMD
 	void	PRIVMSG(std::string cmd, int fd);
-	// void	CheckForChannels_Clients(std::vector<std::string> &tmp, int fd);
 	bool	SplitPrivMsg(std::string cmd, std::vector<std::string> &targets, std::string &message, int fd);
 	void	SendToChannel(const std::string &channelName, int fd, const std::string &message);
 	void	SendToUser(const std::string &nickname, int fd, const std::string &message);
@@ -180,16 +181,12 @@ public:
 	std::vector<std::string> splitParams(std::string params);
 	void getCmdArgs(std::string cmd,std::string& name, std::string& modeset ,std::string &params);
 	//---------------------------//TOPIC CMD
-	// std::string tTopic();
-	// void Topic(std::string &cmd, int &fd);
-	// void Invite(std::string &cmd, int &fd);
-	// std::string gettopic(std::string& input);
-	// int getpos(std::string &cmd);
-	void	Topic(std::string &cmd, int &fd);
-	std::string	ParseTopic(std::string &cmd);
-	void	Invite(std::string &cmd, int &fd);
-
-
+	std::string tTopic();
+	void Topic(std::string &cmd, int &fd);
+	std::string ParseTopic(std::string &cmd);
+	void Invite(std::string &cmd, int &fd);
+	std::string gettopic(std::string& input);
+	int getpos(std::string &cmd);
 };
 
 #endif

@@ -1,9 +1,12 @@
 #ifndef CLIENT_HPP
 #define CLIENT_HPP
 
-#include "Server.hpp"
-#include "Channel.hpp"
+#include <string>
+#include <vector>
 #include <arpa/inet.h>
+
+class Server;
+class Channel;
 
 class Client
 {

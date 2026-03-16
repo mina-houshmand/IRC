@@ -1,0 +1,91 @@
+Starting MODE tests... Suffix: 223
+
+=== TEST 1: MODE +i (invite only) ===
+CMD: MODE #m1223 +i
+: 001  : Welcome to the IRC server!@!
+: 003 :This server was created on Mar 10 2026 at 15:19:59
+: NICK u1
+:u1 NICK u1 #
+: 001 u1 : Welcome to the IRC server!u1@u1!u1
+:u1!u1@127.0.0.1 JOIN #test 
+:u1!u1@127.0.0.1 JOIN #m1223
+: 353 u1 @ #m1223 :@u1
+: 366 u1 #m1223 :END of /NAMES list
+:u1!u1 MODE #m1223 +i 
+Expected: :localhost MODE #m1223 +i
+
+=== TEST 2: MODE +t (topic restrict) ===
+CMD: MODE #m2223 +t
+: 001  : Welcome to the IRC server!@!
+: 003 :This server was created on Mar 10 2026 at 15:19:59
+: NICK u2
+:u2 NICK u2 #
+: 001 u2 : Welcome to the IRC server!u2@u2!u2
+:u2!u2@127.0.0.1 JOIN #test 
+:u2!u2@127.0.0.1 JOIN #m2223
+: 353 u2 @ #m2223 :@u2
+: 366 u2 #m2223 :END of /NAMES list
+:u2!u2 MODE #m2223 +t 
+Expected: :localhost MODE #m2223 +t
+
+=== TEST 3: MODE +k (set key) ===
+CMD: MODE #m3223 +k secret
+: 001  : Welcome to the IRC server!@!
+: 003 :This server was created on Mar 10 2026 at 15:19:59
+: NICK u3
+:u3 NICK u3 #
+: 001 u3 : Welcome to the IRC server!u3@u3!u3
+:u3!u3@127.0.0.1 JOIN #test 
+:u3!u3@127.0.0.1 JOIN #m3223
+: 353 u3 @ #m3223 :@u3
+: 366 u3 #m3223 :END of /NAMES list
+:u3!u3 MODE #m3223 +k secret
+Expected: :localhost MODE #m3223 +k secret
+
+=== TEST 4: MODE +l (set limit) ===
+CMD: MODE #m4223 +l 10
+: 001  : Welcome to the IRC server!@!
+: 003 :This server was created on Mar 10 2026 at 15:19:59
+: NICK u4
+:u4 NICK u4 #
+: 001 u4 : Welcome to the IRC server!u4@u4!u4
+:u4!u4@127.0.0.1 JOIN #test 
+:u4!u4@127.0.0.1 JOIN #m4223
+: 353 u4 @ #m4223 :@u4
+: 366 u4 #m4223 :END of /NAMES list
+:u4!u4 MODE #m4223 +l 10
+Expected: :localhost MODE #m4223 +l 10
+
+=== TEST 5: MODE query (get modes) ===
+CMD: MODE #m5223
+: 001  : Welcome to the IRC server!@!
+: 003 :This server was created on Mar 10 2026 at 15:19:59
+: NICK u5
+:u5 NICK u5 #
+: 001 u5 : Welcome to the IRC server!u5@u5!u5
+:u5!u5@127.0.0.1 JOIN #test 
+:u5!u5@127.0.0.1 JOIN #m5223
+: 353 u5 @ #m5223 :@u5
+: 366 u5 #m5223 :END of /NAMES list
+: 324 u5 #m5223 
+: 329 u5 #m5223 1773153126
+Expected: 324 ... #m5223 +modes
+
+=== TEST 6: MODE - not operator ===
+Setup: join channel without op
+CMD: MODE #m6223 +i
+: 001  : Welcome to the IRC server!@!
+: 003 :This server was created on Mar 10 2026 at 15:19:59
+: NICK u6
+:u6 NICK u6 #
+: 001 u6 : Welcome to the IRC server!u6@u6!u6
+:u6!u6@127.0.0.1 JOIN #test 
+:u6!u6@127.0.0.1 JOIN #m6223
+: 353 u6 @ #m6223 :@u6
+: 366 u6 #m6223 :END of /NAMES list
+:u6!u6 MODE #m6223 +i 
+Expected: 482 ... :You're not channel operator
+
+=== DONE ===
+Output: /mnt/c/42/irc_git/scripts/test_MODE_output.txt
+VS Code: Ctrl+O -> C:\42\irc_git\scripts\test_MODE_output.txt

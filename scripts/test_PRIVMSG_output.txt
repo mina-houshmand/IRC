@@ -1,0 +1,61 @@
+Starting PRIVMSG tests...
+Unique suffix: 234
+
+=== RECEIVER CONNECTS ===
+nick: rcv234
+joins: #chat, #broadcast
+
+=== TEST 1: PRIVMSG to channel ===
+
+SENDER: PRIVMSG #chat :Hello channel!
+: 001  : Welcome to the IRC server!@!
+: 003 :This server was created on Mar 10 2026 at 15:19:59
+: NICK s1_234
+:s1 NICK s1 #
+: 001 s1_234 : Welcome to the IRC server!s1@s1_234!s1
+:s1_234!s1@127.0.0.1 JOIN #test 
+:s1_234!s1@127.0.0.1 JOIN #chat
+: 353 s1_234 @ #chat :@rcv234 s1_234
+: 366 s1_234 #chat :END of /NAMES list
+
+RECEIVER SEES:
+  :s1_234!~s1@localhost PRIVMSG #chat :Hello channel!
+
+=== TEST 2: PRIVMSG to user (DM) ===
+
+SENDER: PRIVMSG rcv234 :Hello via DM!
+: 001  : Welcome to the IRC server!@!
+: 003 :This server was created on Mar 10 2026 at 15:19:59
+: NICK s2_234
+:s2 NICK s2 #
+: 001 s2_234 : Welcome to the IRC server!s2@s2_234!s2
+
+RECEIVER SEES:
+  :s2_234!~s2@localhost PRIVMSG rcv234 :Hello via DM!
+
+=== TEST 3: PRIVMSG broadcast ===
+
+SENDER: PRIVMSG #broadcast :Everyone look here!
+: 001  : Welcome to the IRC server!@!
+: 003 :This server was created on Mar 10 2026 at 15:19:59
+: NICK s3_234
+:s3 NICK s3 #
+: 001 s3_234 : Welcome to the IRC server!s3@s3_234!s3
+:s3_234!s3@127.0.0.1 JOIN #test 
+:s3_234!s3@127.0.0.1 JOIN #broadcast
+: 353 s3_234 @ #broadcast :@rcv234 s3_234
+: 366 s3_234 #broadcast :END of /NAMES list
+
+RECEIVER SEES:
+  :s3_234!~s3@localhost PRIVMSG #broadcast :Everyone look here!
+
+=== SUMMARY ===
+
+Receiver received PRIVMSG (shown above in blue)
+Channel format: :nick!~user@localhost PRIVMSG #channel :message
+DM format: :nick!~user@localhost PRIVMSG target :message
+
+Output saved to: /mnt/c/42/irc_git/scripts/test_PRIVMSG_output.txt
+
+View in VS Code: Ctrl+O → C:\42\irc_git\scripts	est_PRIVMSG_output.txt
+

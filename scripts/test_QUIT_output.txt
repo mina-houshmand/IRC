@@ -1,0 +1,64 @@
+Starting QUIT tests...
+Unique suffix: 324
+
+=== OBSERVER CONNECTS ===
+nick: obs324
+joins: #quittest, #multitest
+
+=== TEST 1: QUIT without reason ===
+
+QUITTER: QUIT
+: 001  : Welcome to the IRC server!@!
+: 003 :This server was created on Mar 10 2026 at 15:19:59
+: NICK q1_324
+:q1 NICK q1 #
+: 001 q1_324 : Welcome to the IRC server!q1@q1_324!q1
+:q1_324!q1@127.0.0.1 JOIN #test 
+:q1_324!q1@127.0.0.1 JOIN #quittest
+: 353 q1_324 @ #quittest :@obs324 q1_324
+: 366 q1_324 #quittest :END of /NAMES list
+
+OBSERVER SEES:
+  :q1_324!~q1@localhost QUIT
+
+=== TEST 2: QUIT with reason ===
+
+QUITTER: QUIT :Goodbye!
+: 001  : Welcome to the IRC server!@!
+: 003 :This server was created on Mar 10 2026 at 15:19:59
+: NICK q2_324
+:q2 NICK q2 #
+: 001 q2_324 : Welcome to the IRC server!q2@q2_324!q2
+:q2_324!q2@127.0.0.1 JOIN #test 
+:q2_324!q2@127.0.0.1 JOIN #quittest
+: 353 q2_324 @ #quittest :@obs324 q2_324
+: 366 q2_324 #quittest :END of /NAMES list
+
+OBSERVER SEES:
+  :q2_324!~q2@localhost QUIT :Goodbye!
+
+=== TEST 3: QUIT with long reason ===
+
+QUITTER: QUIT :Leaving because I need to sleep
+: 001  : Welcome to the IRC server!@!
+: 003 :This server was created on Mar 10 2026 at 15:19:59
+: NICK q3_324
+:q3 NICK q3 #
+: 001 q3_324 : Welcome to the IRC server!q3@q3_324!q3
+:q3_324!q3@127.0.0.1 JOIN #test 
+:q3_324!q3@127.0.0.1 JOIN #multitest
+: 353 q3_324 @ #multitest :@obs324 q3_324
+: 366 q3_324 #multitest :END of /NAMES list
+
+OBSERVER SEES:
+  :q3_324!~q3@localhost QUIT :Leaving because I need to sleep
+
+=== SUMMARY ===
+
+Observer received QUIT broadcasts (shown above in blue)
+Format: :nick!~user@localhost QUIT :reason
+
+Output saved to: /mnt/c/42/irc_git/scripts/test_QUIT_output.txt
+
+View in VS Code: Ctrl+O → C:\42\irc_git\scripts	est_QUIT_output.txt
+
