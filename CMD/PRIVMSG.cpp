@@ -1,94 +1,181 @@
 #include "../INC/Server.hpp"
 
-void FindPM(std::string cmd, std::string tofind, std::string &str)
+/*
+-- Checks:
+|__ 1. Command parameters (target + message required)
+|__ 2. Parse targets and message
+|__ 3. Check if target is channel or nickname
+|__ 4. For channels: validate existence and membership
+|__ 5. For users: validate existence
+|__ 6. Broadcast message to target(s)
+*/
+
+// Parse PRIVMSG command into targets and message
+// Returns false if not enough parameters
+bool Server::SplitPrivMsg(std::string cmd, std::vector<std::string> &targets, std::string &message, int fd)
 {
-	size_t i = 0;
-	for (; i < cmd.size(); i++){
-		if (cmd[i] != ' '){
-			std::string tmp;
-			for (; i < cmd.size() && cmd[i] != ' '; i++)
-				tmp += cmd[i];
-			if (tmp == tofind) break;
-			else tmp.clear();
-		}
-	}
-	if (i < cmd.size()) str = cmd.substr(i);
-	i = 0;
-	for (; i < str.size() && str[i] == ' '; i++);
-	str = str.substr(i);
+    std::vector<std::string> parts = split_cmd(cmd);
+
+    // Check for minimum parameters (PRIVMSG + target + message)
+    if (parts.size() < 3)
+    {
+        _sendResponse(ERR_NEEDMOREPARAMS(std::string("PRIVMSG")), fd);
+        return false;
+    }
+
+    // Extract targets (split by comma)
+    std::string target_Str = parts[1];
+    std::string buff;
+    std::istringstream chStream(target_Str);
+
+    while (std::getline(chStream, buff, ','))
+    {
+        if (!buff.empty())
+            targets.push_back(buff);
+    }
+
+    // Extract message (everything after target, with : prefix)
+    // Message format: :message or just message text
+    size_t msgPos = cmd.find(parts[1]);
+    if (msgPos != std::string::npos)
+    {
+        msgPos = cmd.find(':', msgPos);
+        if (msgPos != std::string::npos)
+        {
+            message = cmd.substr(msgPos);
+            // Ensure ':' prefix
+            if (!message.empty() && message[0] != ':')
+                message = ":" + message;
+        }
+    }
+
+    // Check if any valid targets remain
+    if (targets.empty())
+    {
+        _sendResponse(ERR_NEEDMOREPARAMS(std::string("PRIVMSG")), fd);
+        return false;
+    }
+
+    return true;
 }
 
-std::string SplitCmdPM(std::string &cmd, std::vector<std::string> &tmp)
+// Send message to a channel
+// Validates channel existence and client membership
+void Server::SendToChannel(const std::string &channelName, int fd, const std::string &message)
 {
-	std::stringstream ss(cmd);
-	std::string str, msg;
-	int count = 2;
-	while (ss >> str && count--)
-		tmp.push_back(str);
-	if(tmp.size() != 2) return std::string("");
-	FindPM(cmd, tmp[1], msg);
-	return msg;
+    Client *client = GetClient(fd);
+    if (!client)
+        return;
+
+    std::string clientNick = client->GetNickName();
+    std::string searchName = channelName;
+
+    // Strip # or & prefix for comparison
+    if (!searchName.empty() && (searchName[0] == '#' || searchName[0] == '&'))
+        searchName = searchName.substr(1);
+
+    // Find the channel
+    Channel *channel = GetChannel(searchName);
+
+    // Check if channel exists
+    if (!channel)
+    {
+        _sendResponse(ERR_NOSUCHCHANNEL(clientNick, channelName), fd);
+        return;
+    }
+
+    // Check if client is in the channel
+    if (!channel->get_client(fd) && !channel->get_admin(fd))
+    {
+        _sendResponse(ERR_CANNOTSENDTOCHAN(clientNick, searchName), fd);
+        return;
+    }
+
+    // Build and broadcast message
+    std::stringstream ss;
+    ss << ":" << clientNick << "!~" << client->GetUserName() << "@localhost PRIVMSG " << channelName << " " << message << "\r\n";
+    
+    // DEBUG: Channel message broadcast
+    std::cout << "\033[0;35m[PRIVMSG-CHAN]\033[0m -> " << "\033[0;36mChannel:\033[0m " << channelName 
+              << " | " << "\033[0;36mFrom:\033[0m " << clientNick 
+              << " | " << "\033[0;35mSent:\033[0m " << ss.str() << std::endl;
+    
+    channel->sendTo_all(ss.str(), fd);
 }
 
-std::string SplitCmdPrivmsg(std::string cmd, std::vector<std::string> &tmp)
+// Send message to a user
+// Validates user existence
+void Server::SendToUser(const std::string &nickname, int fd, const std::string &message)
 {
-	std::string str = SplitCmdPM(cmd, tmp);
-	if (tmp.size() != 2) {tmp.clear(); return std::string("");}
-	tmp.erase(tmp.begin());
-	std::string str1 = tmp[0]; std::string str2; tmp.clear();
-	for (size_t i = 0; i < str1.size(); i++){//split the first string by ',' to get the channels names
-		if (str1[i] == ',')
-			{tmp.push_back(str2); str2.clear();}
-		else str2 += str1[i];
-	}
-	tmp.push_back(str2);
-	for (size_t i = 0; i < tmp.size(); i++)//erase the empty strings
-		{if (tmp[i].empty())tmp.erase(tmp.begin() + i--);}
-	if (str[0] == ':') str.erase(str.begin());
-	else //shrink to the first space
-		{for (size_t i = 0; i < str.size(); i++){if (str[i] == ' '){str = str.substr(0, i);break;}}}
-	return  str;
-	
+    Client *sender = GetClient(fd);
+    if (!sender)
+        return;
+
+    std::string senderNick = sender->GetNickName();
+
+    // Find the target user
+    Client *target = GetClientNick(nickname);
+
+    // Check if user exists
+    if (!target)
+    {
+        _sendResponse(ERR_NOSUCHNICK(senderNick, nickname), fd);
+        return;
+    }
+
+    // Check if sending to self
+    if (target->GetFd() == fd)
+    {
+        return;
+    }
+
+    // Build and send message
+    std::stringstream ss;
+    ss << ":" << senderNick << "!~" << sender->GetUserName() << "@localhost PRIVMSG " << nickname << " " << message << "\r\n";
+    
+    // DEBUG: Direct message send
+    std::cout << "\033[0;35m[PRIVMSG-DM]\033[0m -> " << "\033[0;36mFrom:\033[0m " << senderNick 
+              << " -> " << "\033[0;36mTo:\033[0m " << nickname << " (fd:" << target->GetFd() << ")" 
+              << " | " << "\033[0;35mSent:\033[0m " << ss.str() << std::endl;
+    
+    _sendResponse(ss.str(), target->GetFd());
 }
 
-void	Server::CheckForChannels_Clients(std::vector<std::string> &tmp, int fd)
-{
-	for(size_t i = 0; i < tmp.size(); i++){
-		if (tmp[i][0] == '#'){
-			tmp[i].erase(tmp[i].begin());
-			if(!GetChannel(tmp[i]))//ERR_NOSUCHNICK (401) // if the channel doesn't exist
-				{senderror(401, "#" + tmp[i], GetClient(fd)->GetFd(), " :No such nick/channel\r\n"); tmp.erase(tmp.begin() + i); i--;}
-			else if (!GetChannel(tmp[i])->GetClientInChannel(GetClient(fd)->GetNickName())) //ERR_CANNOTSENDTOCHAN (404) // if the client is not in the channel
-				{senderror(404, GetClient(fd)->GetNickName(), "#" + tmp[i], GetClient(fd)->GetFd(), " :Cannot send to channel\r\n"); tmp.erase(tmp.begin() + i); i--;}
-			else tmp[i] = "#" + tmp[i];
-		}
-		else{
-			if (!GetClientNick(tmp[i]))//ERR_NOSUCHNICK (401) // if the client doesn't exist
-				{senderror(401, tmp[i], GetClient(fd)->GetFd(), " :No such nick/channel\r\n"); tmp.erase(tmp.begin() + i); i--;}
-		}
-	}
-}
+/*
+PRIVMSG <target>{,<target>} :<message>
 
-void	Server::PRIVMSG(std::string cmd, int fd)
+Rules:
+|__ Target must be valid channel or nickname
+|__ For channels: must be member (ERR_CANNOTSENDTOCHAN if not)
+|__ For users: must exist (ERR_NOSUCHNICK if not found)
+|__ Message must be provided with : prefix
+|__ Broadcast to all channel members except sender
+|__ ERR_NEEDMOREPARAMS if missing target or message
+*/
+void Server::PRIVMSG(std::string cmd, int fd)
 {
-	std::vector<std::string> tmp;
-	std::string message = SplitCmdPrivmsg(cmd, tmp);
-	if (!tmp.size())//ERR_NORECIPIENT (411) // if the client doesn't specify the recipient
-		{senderror(411, GetClient(fd)->GetNickName(), GetClient(fd)->GetFd(), " :No recipient given (PRIVMSG)\r\n"); return;}
-	if (message.empty())//ERR_NOTEXTTOSEND (412) // if the client doesn't specify the message
-		{senderror(412, GetClient(fd)->GetNickName(), GetClient(fd)->GetFd(), " :No text to send\r\n"); return;}
-	if (tmp.size() > 10) //ERR_TOOMANYTARGETS (407) // if the client send the message to more than 10 clients
-		{senderror(407, GetClient(fd)->GetNickName(), GetClient(fd)->GetFd(), " :Too many recipients\r\n"); return;}
-	CheckForChannels_Clients(tmp, fd); // check if the channels and clients exist
-	for (size_t i = 0; i < tmp.size(); i++){// send the message to the clients and channels
-		if (tmp[i][0] == '#'){
-			tmp[i].erase(tmp[i].begin());
-			std::string resp = ":" + GetClient(fd)->GetNickName() + "!~" + GetClient(fd)->GetUserName() + "@localhost PRIVMSG #" + tmp[i] + " :" + message + "\r\n";
-			GetChannel(tmp[i])->sendTo_all(resp, fd);
-		}
-		else{
-			std::string resp = ":" + GetClient(fd)->GetNickName() + "!~" + GetClient(fd)->GetUserName() + "@localhost PRIVMSG " + tmp[i] + " :" + message + "\r\n";
-			_sendResponse(resp, GetClientNick(tmp[i])->GetFd());
-		}
-	}
+    std::vector<std::string> targets;
+    std::string message;
+
+    // 1. Parse command into targets and message
+    if (!SplitPrivMsg(cmd, targets, message, fd))
+        return;
+
+    // 2. Process each target
+    for (size_t i = 0; i < targets.size(); i++)
+    {
+        std::string target = targets[i];
+
+        // 3. Check if target is channel or nickname
+        if (!target.empty() && (target[0] == '#' || target[0] == '&'))
+        {
+            // 4-5. Send to channel
+            SendToChannel(target, fd, message);
+        }
+        else
+        {
+            // 5. Send to user
+            SendToUser(target, fd, message);
+        }
+    }
 }

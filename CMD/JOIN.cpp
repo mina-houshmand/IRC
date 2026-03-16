@@ -1,4 +1,5 @@
 #include "../INC/Server.hpp"
+#include <iostream>
 
 /*
 IRC Rules to Check in ProcessJoinChannel
@@ -99,6 +100,7 @@ void Server::CreateNewChannel(const std::pair<std::string, std::string> &channel
 
     // Step 4: Notify the client
     NotifyJoin(client, newChannel);
+    std::cout << "DEBUG: IsUserAdmin: " << this->channels.back().get_admin(fd) << std::endl;
 }
 
 // Handle joining an existing channel
@@ -156,15 +158,19 @@ void Server::HandleExistingChannel(const std::pair<std::string, std::string> &ch
 
     // Step 6: Notify the client and broadcast to all users in the channel
     NotifyJoin(client, channel);
+        std::cout << "DEBUG: IsUserAdmin: " << channel.get_admin(fd) << std::endl;
 }
 
 //check if the channel exists or not
 void Server::ProcessJoinChannel(const std::pair<std::string, std::string> &channelKeyPair, int fd) {
     const std::string &channelName = channelKeyPair.first;
+    std::string normalizedName = channelName;
+    if (!normalizedName.empty() && (normalizedName[0] == '#' || normalizedName[0] == '&'))
+        normalizedName = normalizedName.substr(1);
 
-    // Check if the channel already exists
+    // Check if the channel already exists (compare against stored names without prefix)
     for (size_t j = 0; j < this->channels.size(); j++) {
-        if (this->channels[j].GetName() == channelName) {
+        if (this->channels[j].GetName() == normalizedName) {
             HandleExistingChannel(channelKeyPair, j, fd);
             return;
         }
@@ -172,6 +178,8 @@ void Server::ProcessJoinChannel(const std::pair<std::string, std::string> &chann
 
     // If the channel does not exist, create it
     CreateNewChannel(channelKeyPair, fd);
+
+
 }
 
 // Process a single channel (either existing or new)
@@ -201,8 +209,8 @@ token[1] = {"#channel2", "key2"}
 token[2] = {"#channel3", "key3"}
 */
 bool Server::TokenizeJoinCmd(std::vector<std::pair<std::string, std::string> > &token, std::string cmd, int fd){
-	std::vector<std::string> parts;
-    std::istringstream iss(cmd);
+	std::vector<std::string> parts = split_cmd(cmd);
+//    std::istringstream iss(cmd);
     std::string buff;
 
 	// Split the cmd into parts based on spaces and store them in the parts vector
@@ -211,15 +219,16 @@ bool Server::TokenizeJoinCmd(std::vector<std::pair<std::string, std::string> > &
 	std::string cmd = "JOIN #channel1,#channel2 key1,key2";
 	parts = {"JOIN", "#channel1,#channel2", "key1,key2"};
 	*/
-    while (iss >> buff) {
-        parts.push_back(buff);
-    }
+    // while (iss >> buff) {
+    //     parts.push_back(buff);
+    // }
 
 	// Ensure there are enough parameters
 	//join and one channal name is required at least(key is optioan)
     if (parts.size() < 2) {
         token.clear();
-        senderror(461, GetClient(fd)->GetNickName(), GetClient(fd)->GetFd(), " :Not enough parameters\r\n");
+//        senderror(461, GetClient(fd)->GetNickName(), GetClient(fd)->GetFd(), " :Not enough parameters\r\n");
+        _sendResponse(ERR_NEEDMOREPARAMS(GetClient(fd)->GetNickName()), GetClient(fd)->GetFd());
         return false;
     }
 
@@ -260,7 +269,8 @@ bool Server::TokenizeJoinCmd(std::vector<std::pair<std::string, std::string> > &
 
         // Check if the channel name starts with # or &
         if (channelName[0] != '#' && channelName[0] != '&') {
-            senderror(403, GetClient(fd)->GetNickName(), channelName, GetClient(fd)->GetFd(), " :No such channel\r\n");
+//            senderror(403, GetClient(fd)->GetNickName(), channelName, GetClient(fd)->GetFd(), " :No such channel\r\n");
+            _sendResponse(ERR_NOSUCHCHANNEL(GetClient(fd)->GetNickName(), channelName), fd);
             token.erase(token.begin() + i--);  // Remove invalid channel from the token list
         }
     }
@@ -331,20 +341,31 @@ void Server::JOIN(std::string cmd, int fd)
 		token[1] = {"#channel2", "key2"};
 		token[2] = {"#channel3", "key3"};
 	*/
+    std::cout << "DEBUG: Processing JOIN command from Client <" << fd << ">: " << cmd << std::endl;
+    std::cout << "DEBUG: Client Count: " << this->clients.size() << std::endl;
+    for (size_t i = 0; i < this->clients.size(); i++) {
+        if (this->clients[i].GetFd() == GetClient(fd)->GetFd()) {
+            break;
+        }
+    }
+    
+    _sendResponse(RPL_JOINMSG(GetClient(fd)->getHostname(), GetClient(fd)->getIpAdd(), "test "), fd); // Test line to verify JOIN command processing
 	std::vector<std::pair<std::string, std::string> > token;
 	if (!TokenizeJoinCmd(token, cmd, fd)) {
-        senderror(461, GetClient(fd)->GetNickName(), GetClient(fd)->GetFd(), " :Not enough parameters\r\n");
-        return;
+//        senderror(461, GetClient(fd)->GetNickName(), GetClient(fd)->GetFd(), " :Not enough parameters\r\n");
+        _sendResponse(ERR_NEEDMOREPARAMS(GetClient(fd)->GetNickName()), fd);
+    return;
     }
-
+    
 	// Step 2: Check if the client is trying to join more than 10 channels
 	if (token.size() > 10) {
-		senderror(407, GetClient(fd)->GetNickName(), GetClient(fd)->GetFd(), " :Too many channels\r\n"); 
+        _sendResponse(ERR_TOOMANYTARGETS(GetClient(fd)->GetNickName()), fd);
 		return;
 	}
 	
 	// Step 3: Process each channel
     for (size_t i = 0; i < token.size(); i++) {
+        std::cout << "DEBUG: Notifying Client <" << this->clients[i].GetFd() << "> about joining channel #" << token[i].first << std::endl;
         ProcessJoinChannel(token[i], fd);
     }
 	

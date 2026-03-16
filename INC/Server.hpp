@@ -153,15 +153,21 @@ public:
 
 	//---------------------------//PART CMD
 	void	PART(std::string cmd, int fd);
-	int		SplitCmdPart(std::string cmd, std::vector<std::string> &tmp, std::string &reason, int fd);
-
+	// int		SplitCmdPart(std::string cmd, std::vector<std::string> &tmp, std::string &reason, int fd);
+	bool	SplitCmdPart(std::string cmd, std::vector<std::string> &tmp, std::string &reason, int fd);
+	void	ProcessPartChannel(const std::string &channelName, int fd, const std::string &reason);
 	//---------------------------//CKIK CMD
 	void	KICK(std::string cmd, int fd);
 	//---------------------------//PRIVMSG CMD
 	void	PRIVMSG(std::string cmd, int fd);
-	void	CheckForChannels_Clients(std::vector<std::string> &tmp, int fd);
+	// void	CheckForChannels_Clients(std::vector<std::string> &tmp, int fd);
+	bool	SplitPrivMsg(std::string cmd, std::vector<std::string> &targets, std::string &message, int fd);
+	void	SendToChannel(const std::string &channelName, int fd, const std::string &message);
+	void	SendToUser(const std::string &nickname, int fd, const std::string &message);
 	//---------------------------//QUITE CMD
 	void	QUIT(std::string cmd, int fd);
+	std::string	ParseQuitReason(std::string cmd);
+	void	BroadcastQuit(int fd, const std::string &reason);
 	//---------------------------//MODE CMD
 	void 		mode_command(std::string& cmd, int fd);
 	std::string invite_only(Channel *channel, char opera, std::string chain);
@@ -174,12 +180,14 @@ public:
 	std::vector<std::string> splitParams(std::string params);
 	void getCmdArgs(std::string cmd,std::string& name, std::string& modeset ,std::string &params);
 	//---------------------------//TOPIC CMD
-	std::string tTopic();
-	void Topic(std::string &cmd, int &fd);
-	void Invite(std::string &cmd, int &fd);
-	std::string gettopic(std::string& input);
-	int getpos(std::string &cmd);
-
+	// std::string tTopic();
+	// void Topic(std::string &cmd, int &fd);
+	// void Invite(std::string &cmd, int &fd);
+	// std::string gettopic(std::string& input);
+	// int getpos(std::string &cmd);
+	void	Topic(std::string &cmd, int &fd);
+	std::string	ParseTopic(std::string &cmd);
+	void	Invite(std::string &cmd, int &fd);
 
 
 };

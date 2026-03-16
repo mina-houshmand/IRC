@@ -1,89 +1,149 @@
 #include "../INC/Server.hpp"
 
-void FindPR(std::string cmd, std::string tofind, std::string &str)
+/*
+-- Checks:
+|__ 1. Command parameters (channel required)
+|__ 2. Channel existence
+|__ 3. Client membership in channel
+|__ 4. Build part message with optional reason
+|__ 5. Broadcast part to channel
+|__ 6. Remove client from channel
+|__ 7. Cleanup empty channel
+*/
+
+// Parse PART command into channels and optional reason
+bool Server::SplitCmdPart(std::string cmd, std::vector<std::string> &tmp, std::string &reason, int fd)
 {
-	size_t i = 0;
-	for (; i < cmd.size(); i++){
-		if (cmd[i] != ' '){
-			std::string tmp;
-			for (; i < cmd.size() && cmd[i] != ' '; i++)
-				tmp += cmd[i];
-			if (tmp == tofind) break;
-			else tmp.clear();
-		}
-	}
-	if (i < cmd.size()) str = cmd.substr(i);
-	i = 0;
-	for (; i < str.size() && str[i] == ' '; i++);
-	str = str.substr(i);
+    std::vector<std::string> parts = split_cmd(cmd);
+
+    // Check for minimum parameters (PART + at least one channel)
+    if (parts.size() < 2)
+    {
+        _sendResponse(ERR_NEEDMOREPARAMS(std::string("PART")), fd);
+        return false;
+    }
+
+    // Extract channel names (split by comma)
+    std::string channel_Str = parts[1];
+    std::string buff;
+    std::istringstream chStream(channel_Str);
+
+    while (std::getline(chStream, buff, ','))
+    {
+        if (!buff.empty())
+            tmp.push_back(buff);
+    }
+
+    // Extract reason if provided (everything after channel list)
+    size_t reasonPos = cmd.find(parts[1]);
+    if (reasonPos != std::string::npos)
+    {
+        reasonPos = cmd.find_first_of(" :", reasonPos + parts[1].size());
+        if (reasonPos != std::string::npos)
+        {
+            reason = cmd.substr(reasonPos);
+            // Trim leading spaces and ensure ':' prefix
+            size_t start = reason.find_first_not_of(" :");
+            if (start != std::string::npos)
+            {
+                reason = reason.substr(start);
+                if (!reason.empty() && reason[0] != ':')
+                    reason = ":" + reason;
+            }
+        }
+    }
+
+    // Check if any valid channels remain
+    if (tmp.empty())
+    {
+        _sendResponse(ERR_NEEDMOREPARAMS(std::string("PART")), fd);
+        return false;
+    }
+
+    return true;
 }
 
-std::string SplitCmdPR(std::string &cmd, std::vector<std::string> &tmp)
+// Process parting from a single channel
+void Server::ProcessPartChannel(const std::string &channelName, int fd, const std::string &reason)
 {
-	std::stringstream ss(cmd);
-	std::string str, reason;
-	int count = 2;
-	while (ss >> str && count--)
-		tmp.push_back(str);
-	if(tmp.size() != 2) return std::string("");
-	FindPR(cmd, tmp[1], reason);
-	return reason;
+    Client *client = GetClient(fd);
+    if (!client)
+        return;
+
+    std::string clientNick = client->GetNickName();
+    std::string searchName = channelName;
+
+    // Strip # or & prefix for comparison
+    if (!searchName.empty() && (searchName[0] == '#' || searchName[0] == '&'))
+        searchName = searchName.substr(1);
+
+    // Find the channel in the server's channel list
+    Channel *channel = GetChannel(searchName);
+
+    // 2. Check if channel exists
+    if (!channel)
+    {
+        _sendResponse(ERR_NOSUCHCHANNEL(clientNick, channelName), fd);
+        return;
+    }
+
+    // 3. Check if client is in the channel
+    if (!channel->get_client(fd) && !channel->get_admin(fd))
+    {
+        _sendResponse(ERR_NOTONCHANNEL(clientNick, searchName), fd);
+        return;
+    }
+
+    // 4. Build part message with optional reason
+    std::stringstream ss;
+    ss << ":" << clientNick << "!~" << client->GetUserName() << "@localhost PART " << channelName;
+    if (!reason.empty())
+        ss << " " << reason;
+    ss << "\r\n";
+
+    // DEBUG: Part broadcast
+    std::cout << "\033[0;33m[PART]\033[0m -> " << "\033[0;36mChannel:\033[0m " << channelName 
+              << " | " << "\033[0;36mLeaving:\033[0m " << clientNick 
+              << " | " << "\033[0;33mSent:\033[0m " << ss.str() << std::endl;
+    if (!reason.empty())
+        std::cout << "\033[0;33m[PART]\033[0m -> " << "\033[0;36mReason:\033[0m " << reason << std::endl;
+
+    // 5. Broadcast part message to all users in the channel
+    channel->sendTo_all(ss.str());
+
+    // 6. Remove client from channel (check if admin or regular client)
+    if (channel->get_admin(fd))
+        channel->remove_admin(fd);
+    else
+        channel->remove_client(fd);
+
+    // 7. Delete channel if empty
+    if (channel->GetClientsNumber() == 0)
+        RemoveChannel(searchName);
 }
 
-int Server::SplitCmdPart(std::string cmd, std::vector<std::string> &tmp, std::string &reason, int fd)
-{
-	reason = SplitCmdPR(cmd, tmp);
-	if(tmp.size() < 2) {tmp.clear(); return 0;}
-	tmp.erase(tmp.begin());
-	std::string str = tmp[0]; std::string str1; tmp.clear();
-	for (size_t i = 0; i < str.size(); i++){//split the first string by ',' to get the channels names
-		if (str[i] == ',')
-			{tmp.push_back(str1); str1.clear();}
-		else str1 += str[i];
-	}
-	tmp.push_back(str1);
-	for (size_t i = 0; i < tmp.size(); i++)//erase the empty strings
-		{if (tmp[i].empty())tmp.erase(tmp.begin() + i--);}
-	if (reason[0] == ':') reason.erase(reason.begin());
-	else //shrink to the first space
-		{for (size_t i = 0; i < reason.size(); i++){if (reason[i] == ' '){reason = reason.substr(0, i);break;}}}
-	for (size_t i = 0; i < tmp.size(); i++){// erase the '#' from the channel name and check if the channel valid
-			if (*(tmp[i].begin()) == '#')
-				tmp[i].erase(tmp[i].begin());
-			else
-				{senderror(403, GetClient(fd)->GetNickName(), tmp[i], GetClient(fd)->GetFd(), " :No such channel\r\n"); tmp.erase(tmp.begin() + i--);}
-		}
-	return 1;
-}
+/*
+PART <channel>{,<channel>} [<reason>]
 
+Rules:
+|__ Channel names must start with # or &
+|__ Client must be member of channel (ERR_NOTONCHANNEL if not)
+|__ Broadcast PART message with optional reason
+|__ Delete channel if empty after part
+|__ ERR_NEEDMOREPARAMS if missing channel parameter
+*/
 void Server::PART(std::string cmd, int fd)
 {
-	std::vector<std::string> tmp;
-	std::string reason;
-	if (!SplitCmdPart(cmd, tmp, reason, fd))// ERR_NEEDMOREPARAMS (461) // if the channel name is empty
-		{senderror(461, GetClient(fd)->GetNickName(), GetClient(fd)->GetFd(), " :Not enough parameters\r\n"); return;}
-	for (size_t i = 0; i < tmp.size(); i++){
-		bool flag = false;
-		for (size_t j = 0; j < this->channels.size(); j++){ // search for the channel
-			if (this->channels[j].GetName() == tmp[i]){ // check if the channel exist
-				flag = true;
-				if (!channels[j].get_client(fd) && !channels[j].get_admin(fd)) // ERR_NOTONCHANNEL (442) // if the client is not in the channel
-					{senderror(442, GetClient(fd)->GetNickName(), "#" + tmp[i], GetClient(fd)->GetFd(), " :You're not on that channel\r\n"); continue;}
-					std::stringstream ss;
-					ss << ":" << GetClient(fd)->GetNickName() << "!~" << GetClient(fd)->GetUserName() << "@" << "localhost" << " PART #" << tmp[i];
-					if (!reason.empty())
-						ss << " :" << reason << "\r\n";
-					else ss << "\r\n";
-					channels[j].sendTo_all(ss.str());
-					if (channels[j].get_admin(channels[j].GetClientInChannel(GetClient(fd)->GetNickName())->GetFd()))
-						channels[j].remove_admin(channels[j].GetClientInChannel(GetClient(fd)->GetNickName())->GetFd());
-					else
-						channels[j].remove_client(channels[j].GetClientInChannel(GetClient(fd)->GetNickName())->GetFd());
-					if (channels[j].GetClientsNumber() == 0)
-						channels.erase(channels.begin() + j);
-			}
-		}
-		if (!flag) // ERR_NOSUCHCHANNEL (403) // if the channel doesn't exist
-			senderror(403, GetClient(fd)->GetNickName(), "#" + tmp[i], GetClient(fd)->GetFd(), " :No such channel\r\n");
-	}
+    std::vector<std::string> channels;
+    std::string reason;
+
+    // 1. Parse command into channels and optional reason
+    if (!SplitCmdPart(cmd, channels, reason, fd))
+        return;
+
+    // 2. Process each channel
+    for (size_t i = 0; i < channels.size(); i++)
+    {
+        ProcessPartChannel(channels[i], fd, reason);
+    }
 }
