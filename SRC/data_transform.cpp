@@ -44,6 +44,12 @@ void Server::data_transform(int fd)
 			printStatus(RED, "Client", fd, "Disconnected");
 		else 
 			std::cerr << RED << "Error receiving data from Client <" << fd << ">: " << strerror(errno) << WHI << std::endl;
+		// Broadcast QUIT message for unexpected disconnect
+		std::string rpl = ":" + GetClient(fd)->GetNickName() + "!~" + GetClient(fd)->GetUserName() + "@localhost QUIT :Connection closed\r\n";
+		for (size_t i = 0; i < channels.size(); i++){
+			if (channels[i].get_client(fd) || channels[i].get_admin(fd))
+				channels[i].sendTo_all(rpl, fd);
+		}
 		disconnectClient(fd);
 	}
 	else

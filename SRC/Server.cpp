@@ -77,19 +77,15 @@ void Server::RemoveFds(int fd){
 void	Server::RmChannels(int fd){
 	//go through all channels and remove the client from each channel
 	for (size_t i = 0; i < this->channels.size(); i++){
-		int flag = 0;
 
 		//check if the client is in the channel as a client or admin
-		if (channels[i].get_client(fd)){
+		if (channels[i].get_client(fd))
 			channels[i].remove_client(fd);
-			flag = 1;
-		}
 
 		//check if the client is in the channel as an admin
-		else if (channels[i].get_admin(fd)){
+		else if (channels[i].get_admin(fd))
 			channels[i].remove_admin(fd);
-			flag = 1;
-		}
+
 
 		//if the channel is empty, delete the channel
 		if (channels[i].GetClientsNumber() == 0){
@@ -97,15 +93,10 @@ void	Server::RmChannels(int fd){
 			//the channel is erased and the other elements are shifted left 
 			//so we need to decrement i because the next element is now at the current index instead of i+1
 			//like the channel[3] is erased and now the channel[4] is at channel[3] position so we need to decrement i to check the new channel[3]
-			i--; 
+			i--;
 			continue;
 		}
-		if (flag){
-			//Constructs a QUIT message in the IRC protocol format 
-			std::string rpl = ":" + GetClient(fd)->GetNickName() + "!~" + GetClient(fd)->GetUserName() + "@localhost QUIT Quit\r\n";
-			//notify all clients in the channel that the client has left
-			channels[i].sendTo_all(rpl);
-		}
+		// Note: QUIT broadcast is now handled by QUIT command handler
 	}
 }
 //---------------//Remove Methods
