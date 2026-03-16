@@ -26,6 +26,7 @@
 #define WHI "\e[0;37m"
 #define GRE "\e[1;32m"
 #define YEL "\e[1;33m"
+#define BLU "\e[1;34m"
 
 class Client;
 class Channel;
@@ -34,7 +35,7 @@ class Server
 {
 private:
 	int port;
-	int server_fdsocket;
+	int server_socket_fd;
 	static bool Signal;
 	std::string password;
 	std::vector<Client> clients;
@@ -48,16 +49,45 @@ public:
 	~Server();
 	Server(Server const &src);
 	Server &operator=(Server const &src);
+
+	int GetPort(){return this->port;}
+	int GetFd(){return this->server_socket_fd;}
+	void disconnectClient(int fd){
+		RmChannels(fd);
+		RemoveClient(fd);
+		RemoveFds(fd);
+		close(fd);
+	}
+	//parsing
+	std::vector<std::string> split_recivedcmd(std::string str);
+	void handleClientCommand(std::string &cmd, int fd);
+	std::vector<std::string> split_cmd( std::string &str);
+	void trimLeadingWhitespace(std::string &cmd);
+	void cmd_toUpper(std::string &command);
+
+
+	//printing stuff
+	void printStatus(const std::string& color, const std::string& type, int fd, const std::string& status){
+		std::cout << color << type << " <" << fd << "> " << status << WHI << std::endl;
+	}
+	void printMessage(const std::string& message){
+		std::cout << BLU << message << std::endl;
+	}
+	void printError(const std::string& message){
+		std::cerr << RED << "[ERROR] " << message << WHI << std::endl;
+	}
+
+
+
+	// ---------------------------------------------------------------------------------------
 	//---------------//Getters
 	static bool isBotfull;
-	int GetFd();
-	int GetPort();
 	std::string GetPassword();
-	Client *GetClient(int fd);
+	Client *GetClient(int current_fd);
 	Client *GetClientNick(std::string nickname);
 	Channel *GetChannel(std::string name);
 	//---------------//Setters
-	void SetFd(int server_fdsocket);
+	void SetFd(int server_socket_fd);
 	void SetPort(int port);
 	void SetPassword(std::string password);
 	void AddClient(Client newClient);
@@ -77,19 +107,38 @@ public:
 	//---------------//Close and Signal Methods
 	static void SignalHandler(int signum);
 	void close_fds();
+
+
 	//---------------//Server Methods
-	void init(int port, std::string pass);
-	void accept_new_client();
+	void server_config(std::string port, std::string pass);
+	bool isSocketReadable(const pollfd& pfd);
+
 	void set_sever_socket();
-	void reciveNewData(int fd);
-	//---------------//Parsing Methods
-	std::vector<std::string> split_recivedBuffer(std::string str);
-	std::vector<std::string> split_cmd(std::string &str);
-	void parse_exec_cmd(std::string &cmd, int fd);
+	void initializeAddress(struct sockaddr_in &address, int port);
+	void addSocketToPoll(int fd);
+
+	int performPoll_request();
+
+	//new connection request
+	void new_connection_request();
+	int	 acceptNewClient();
+	bool setupClientSocket(int fd);
+	void addClientToPoll(int fd);
+	void addClientToServer(const Client &client);
+	void initializeClient(Client &client, int fd);
+
+
+
+	//data transform
+	void data_transform(int fd);
+	void processClientCommands(const std::string &buffer, int fd);
+
+
+
 	//---------------//Authentification Methods
 	// bool BypassForBot(std::string cmd, int fd);
 	// bool notregistered(int fd);
-	bool isregistered(int fd);
+	bool isClientRegistered(int fd);
 	bool nickNameInUse(std::string& nickname);
 	bool is_validNickname(std::string& nickname);
 	void client_authen(int fd, std::string pass);
@@ -106,9 +155,9 @@ public:
 	void	HELP(int fd);
 	//---------------------------//PART CMD
 	void	PART(std::string cmd, int fd);
+	// int		SplitCmdPart(std::string cmd, std::vector<std::string> &tmp, std::string &reason, int fd);
 	bool	SplitCmdPart(std::string cmd, std::vector<std::string> &tmp, std::string &reason, int fd);
 	void	ProcessPartChannel(const std::string &channelName, int fd, const std::string &reason);
-
 	//---------------------------//CKIK CMD
 	void	KICK(std::string cmd, int fd);
 	//---------------------------//PRIVMSG CMD
@@ -132,9 +181,12 @@ public:
 	std::vector<std::string> splitParams(std::string params);
 	void getCmdArgs(std::string cmd,std::string& name, std::string& modeset ,std::string &params);
 	//---------------------------//TOPIC CMD
-	void	Topic(std::string &cmd, int &fd);
-	std::string	ParseTopic(std::string &cmd);
-	void	Invite(std::string &cmd, int &fd);
+	std::string tTopic();
+	void Topic(std::string &cmd, int &fd);
+	std::string ParseTopic(std::string &cmd);
+	void Invite(std::string &cmd, int &fd);
+	std::string gettopic(std::string& input);
+	int getpos(std::string &cmd);
 };
 
 #endif
