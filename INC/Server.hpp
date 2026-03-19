@@ -109,14 +109,14 @@ public:
 	bool	SplitCmdPart(std::string cmd, std::vector<std::string> &tmp, std::string &reason, int fd);
 	void	ProcessPartChannel(const std::string &channelName, int fd, const std::string &reason);
 
-	//---------------------------//CKIK CMD
+	//---------------------------//KICK CMD
 	void	KICK(std::string cmd, int fd);
 	//---------------------------//PRIVMSG CMD
 	void	PRIVMSG(std::string cmd, int fd);
 	bool	SplitPrivMsg(std::string cmd, std::vector<std::string> &targets, std::string &message, int fd);
 	void	SendToChannel(const std::string &channelName, int fd, const std::string &message);
 	void	SendToUser(const std::string &nickname, int fd, const std::string &message);
-	//---------------------------//QUITE CMD
+	//---------------------------//QUIT CMD
 	void	QUIT(std::string cmd, int fd);
 	std::string	ParseQuitReason(std::string cmd);
 	void	BroadcastQuit(int fd, const std::string &reason);
