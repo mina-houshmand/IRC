@@ -1,94 +1,123 @@
 #include "../INC/Server.hpp"
+#include <iostream>
+#include <sstream>
 
 /*
--- Checks:
-|__ 1. Command parameters (channel + user required)
-|__ 2. Channel existence
-|__ 3. Issuer membership in channel
-|__ 4. Issuer operator privileges
-|__ 5. Target user membership in channel
-|__ 6. Broadcast kick message
-|__ 7. Remove target from channel
-|__ 8. Cleanup empty channel
+KICK <channel> <user> *( "," <user> ) [<comment>]
+
+Rules:
+|__ 1. Channel must exist (ERR_NOSUCHCHANNEL)
+|__ 2. Client must be on channel (ERR_NOTONCHANNEL)
+|__ 3. Client must be operator (ERR_CHANOPRIVSNEEDED)
+|__ 4. Target must be on channel (ERR_USERNOTINCHANNEL)
+|__ 5. Broadcast KICK message to all channel members
+|__ 6. Remove target from channel
 */
 
-void	Server::KICK(std::string cmd, int fd)
+void Server::KICK(std::string cmd, int fd)
 {
-	std::vector<std::string> cmd_tokens = split_cmd(cmd);
+    Client *client = GetClient(fd);
+    if (!client)
+        return;
 
-	// 1. Check command parameters
-	if (cmd_tokens.size() < 3) {
-		_sendResponse(ERR_NEEDMOREPARAMS(std::string("KICK")), fd);
-		return;
-	}
+    std::string clientNick = client->GetNickName();
+    std::vector<std::string> parts = split_cmd(cmd);
 
-	std::string channelName = cmd_tokens[1];
-	std::string targetUser = cmd_tokens[2];
+    // 1. Check for minimum parameters (KICK + channel + user)
+    if (parts.size() < 3)
+    {
+        _sendResponse(ERR_NEEDMOREPARAMS(std::string("KICK")), fd);
+        return;
+    }
 
-	// Extract reason (everything after targetUser, with : prefix if not present)
-	std::string reason = "";
-	if (cmd_tokens.size() > 3) {
-		size_t reasonPos = cmd.find(targetUser) + targetUser.size();
-		reason = cmd.substr(reasonPos);
-		// Trim leading spaces
-		size_t start = reason.find_first_not_of(" \t");
-		if (start != std::string::npos)
-			reason = reason.substr(start);
-		// Add : prefix if not present
-		if (!reason.empty() && reason[0] != ':')
-			reason = ":" + reason;
-	}
+    std::string channelName = parts[1];
+    std::string targetNicks = parts[2];
+    std::string reason = "";
 
-	// 2. Check if channel exists
-	Channel *channel = GetChannel(channelName);
-	if (!channel) {
-		_sendResponse(ERR_NOSUCHCHANNEL(GetClient(fd)->GetNickName(), channelName), fd);
-		return;
-	}
+    // Extract reason if provided
+    size_t reasonPos = cmd.find(parts[2]);
+    if (reasonPos != std::string::npos)
+    {
+        reasonPos = cmd.find_first_not_of(" \t", reasonPos + parts[2].length());
+        if (reasonPos != std::string::npos)
+        {
+            reason = cmd.substr(reasonPos);
+            if (reason[0] == ':')
+                reason = reason.substr(1);
+        }
+    }
 
-	// 3. Check if issuer is in the channel
-	if (!channel->get_client(fd) && !channel->get_admin(fd)) {
-		_sendResponse(ERR_KICKNOTONCHANNEL(GetClient(fd)->GetNickName(), channelName), fd);
-		return;
-	}
+    // Strip # or & prefix for internal operations
+    std::string searchName = channelName;
 
-	// 4. Check if issuer is channel operator
-	if (!channel->get_admin(fd)) {
-		_sendResponse(ERR_KICKCHANOPRIVSNEEDED(GetClient(fd)->GetNickName(), channelName), fd);
-		return;
-	}
+    Channel *channel = GetChannel(searchName);
 
-	// 5. Check if target user is in the channel
-	Client *targetClient = channel->GetClientInChannel(targetUser);
-	if (!targetClient) {
-		_sendResponse(ERR_KICKUSERNOTINCHANNEL(GetClient(fd)->GetNickName(), channelName, targetUser), fd);
-		return;
-	}
+    // 2. Check if channel exists
+    if (!channel)
+    {
+        _sendResponse(ERR_NOSUCHCHANNEL(clientNick, channelName), fd);
+        return;
+    }
 
-	// 6. Broadcast kick message to all channel members
-	std::stringstream ss;
-	ss << ":" << GetClient(fd)->GetNickName() << "!~" << GetClient(fd)->GetUserName() 
-	   << "@localhost KICK " << channelName << " " << targetUser;
-	if (!reason.empty())
-		ss << " " << reason;
-	ss << "\r\n";
-	
-	// DEBUG: Kick broadcast
-	std::cout << "\033[0;31m[KICK]\033[0m -> " << "\033[0;36mChannel:\033[0m " << channelName 
-	          << " | " << "\033[0;36mKicked:\033[0m " << targetUser 
-	          << " | " << "\033[0;36mBy:\033[0m " << GetClient(fd)->GetNickName() 
-	          << " | " << "\033[0;31mSent:\033[0m " << ss.str() << std::endl;
-	
-	channel->sendTo_all(ss.str());
+    // 3. Check if kicking client is in the channel
+    if (!channel->get_client(fd) && !channel->get_admin(fd))
+    {
+        _sendResponse(ERR_KICKNOTONCHANNEL(clientNick, channelName), fd);
+        return;
+    }
 
-	// 7. Remove target user from channel
-	int targetFd = targetClient->GetFd();
-	if (channel->get_admin(targetFd))
-		channel->remove_admin(targetFd);
-	else
-		channel->remove_client(targetFd);
+    // 4. Check if kicking client is an operator
+    if (!channel->get_admin(fd))
+    {
+        _sendResponse(ERR_KICKCHANOPRIVSNEEDED(clientNick, channelName), fd);
+        return;
+    }
 
-	// 8. Remove channel if empty
-	if (channel->GetClientsNumber() == 0)
-		RemoveChannel(channelName);
+    // Process each target individually
+    std::istringstream targetStream(targetNicks);
+    std::string target;
+    while (std::getline(targetStream, target, ','))
+    {
+        if (target.empty())
+            continue;
+
+        // 5. Check if target user is in the channel
+        Client *targetClient = channel->GetClientInChannel(target);
+        if (!targetClient)
+        {
+            _sendResponse(ERR_KICKUSERNOTINCHANNEL(clientNick, channelName, target), fd);
+            continue;
+        }
+
+        std::string finalReason = reason.empty() ? target : reason;
+
+        // 6. Build the KICK message
+        // Format: :<kicker>!~<user>@<host> KICK <channel> <target> :<reason>
+        std::stringstream ss;
+        ss << ":" << clientNick << "!~" << client->GetUserName() << "@" << client->getHostname() 
+           << " KICK " << channelName << " " << target << " :" << finalReason << "\r\n";
+        
+        std::string kickMsg = ss.str();
+
+        // Print debug information in colorful style
+        std::cout << "\033[0;35m[KICK]\033[0m -> \033[0;32m" << clientNick << "\033[0m kicked \033[0;31m" 
+                  << target << "\033[0m from \033[0;34m" << channelName << "\033[0m "
+                  << "(\033[0;36mReason:\033[0m " << finalReason << ")" << std::endl;
+
+        // 7. Broadcast kick message to all users in the channel (including the target before they are removed)
+        channel->sendTo_all(kickMsg);
+
+        // 8. Remove target from channel
+        if (channel->get_admin(targetClient->GetFd()))
+            channel->remove_admin(targetClient->GetFd());
+        else
+            channel->remove_client(targetClient->GetFd());
+    }
+
+    // 9. Delete channel if it became empty (e.g., operator kicks themselves)
+    if (channel->GetClientsNumber() == 0)
+    {
+        RemoveChannel(searchName);
+        std::cout << "\033[0;33m[CHANNEL]\033[0m -> Channel \033[0;34m#" << searchName << "\033[0m deleted (empty)" << std::endl;
+    }
 }

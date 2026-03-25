@@ -242,8 +242,6 @@ void	Server::mode_command(std::string &cmd, int fd)
 
 	// Strip # or & prefix for channel lookup
 	searchName = channelName;
-	if (!searchName.empty() && (searchName[0] == '#' || searchName[0] == '&'))
-		searchName = searchName.substr(1);
 
 	client = GetClient(fd);
 	if (!client)

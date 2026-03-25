@@ -74,8 +74,8 @@ void Server::ProcessPartChannel(const std::string &channelName, int fd, const st
     std::string searchName = channelName;
 
     // Strip # or & prefix for comparison
-    if (!searchName.empty() && (searchName[0] == '#' || searchName[0] == '&'))
-        searchName = searchName.substr(1);
+    // if (!searchName.empty() && (searchName[0] == '#' || searchName[0] == '&'))
+    //     ;
 
     // Find the channel in the server's channel list
     Channel *channel = GetChannel(searchName);

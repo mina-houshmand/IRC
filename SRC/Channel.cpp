@@ -216,12 +216,16 @@ void Channel::sendTo_all(std::string rpl1)
 	const std::string NC = "\033[0m";
 
 	for(size_t i = 0; i < admins.size(); i++){
+		if (admins[i].GetFd() < 0)
+			continue;
 		std::cout << GREEN << "[sendTo_all]" << NC << " -> " << BLUE << "Admin FD:" << NC << " " << admins[i].GetFd() 
 		          << " | " << MAGENTA << "Sent:" << NC << " " << rpl1 << std::endl;
 		if(send(admins[i].GetFd(), rpl1.c_str(), rpl1.size(),0) == -1)
 			std::cerr << "send() failed (fd=" << admins[i].GetFd() << "): " << std::strerror(errno) << std::endl;
 	}
 	for(size_t i = 0; i < clients.size(); i++){
+		if (clients[i].GetFd() < 0)
+			continue;
 		std::cout << GREEN << "[sendTo_all]" << NC << " -> " << BLUE << "Client FD:" << NC << " " << clients[i].GetFd() 
 		          << " | " << MAGENTA << "Sent:" << NC << " " << rpl1 << std::endl;
 		if(send(clients[i].GetFd(), rpl1.c_str(), rpl1.size(),0) == -1)
@@ -239,6 +243,8 @@ void Channel::sendTo_all(std::string rpl1, int fd)
 	const std::string NC = "\033[0m";
 
 	for(size_t i = 0; i < admins.size(); i++){
+		if (admins[i].GetFd() < 0)
+			continue;
 		std::cout << GREEN << "[sendTo_all]" << NC << " -> " << BLUE << "Admin FD:" << NC << " " << admins[i].GetFd() 
 		          << " | " << YELLOW << "Excluded FD:" << NC << " " << fd 
 		          << " | " << MAGENTA << "Sent:" << NC << " " << rpl1 << std::endl;
@@ -247,6 +253,8 @@ void Channel::sendTo_all(std::string rpl1, int fd)
 				std::cerr << "send() failed" << std::endl;
 	}
 	for(size_t i = 0; i < clients.size(); i++){
+		if (clients[i].GetFd() < 0)
+			continue;
 		std::cout << GREEN << "[sendTo_all]" << NC << " -> " << BLUE << "Client FD:" << NC << " " << clients[i].GetFd() 
 		          << " | " << YELLOW << "Excluded FD:" << NC << " " << fd 
 		          << " | " << MAGENTA << "Sent:" << NC << " " << rpl1 << std::endl;

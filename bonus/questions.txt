@@ -1,0 +1,96 @@
+What is the true reason programmers hate sunlight?|Vampire mode|Too many bugs|Screen glare|Real life lag|1
+What does "it works on my machine" actually mean?|Magic happened|It's perfect|You're wrong|I refuse to help|1
+What is the best way to fix a bug?|Restart PC|Delete code|Blame DNS|Add more code|3
+What is the strongest programming language?|Python|Friendship|Java|C++|2
+Why do programmers prefer dark mode?|More cool|Free FPS|Bugs hide better|Less light|3
+What is 0 divided by 0?|Error|Infinite sadness|1|0|2
+What is the real meaning of TODO?|Ignore forever|Future problem|To Do|Never do|2
+Why did the server crash?|User error|Mercury retrograde|Overload|Underload|2
+What is the best database?|Excel|Postgres|MongoDB|MySQL|1
+What is the hardest bug to fix?|Logic|Works sometimes|Syntax|Race condition|2
+What is the speed of WiFi when someone watches Netflix?|Slow|Zero|Fast|Medium|2
+What is the best way to learn programming?|Practice|Courses|Stack Overflow copy paste|Books|3
+What is a senior developer?|Knows everything|Google expert|Knows where to search|10 years exp|3
+What does AI stand for?|Actually Magic|Artificial Intelligence|Automatic Ideas|Another Internet|2
+Why did the programmer quit?|Semicolon missing|Too many bugs|Burnout|Low salary|1
+What is Git used for?|Chaos|Confusion|Version control|Backup|3
+What does CTRL+C do?|Hope|Copy|Cancel|Panic|2
+What is the best debugging method?|Stare at screen|Logs|Print|Breakpoints|1
+Why is JavaScript weird?|Because yes|Design|Browsers|History|1
+What is undefined?|JS feature|Nothing|Something|Everything|1
+Why did the code fail?|Dependencies|Because Monday|Logic|Syntax|2
+What is production?|Safe place|Danger zone|Testing area|Chaos realm|4
+What is staging?|Fake prod|Test area|Almost prod|Confusion|3
+Why do devs love coffee?|Addiction|It compiles code|Energy|Taste|2
+What is a bug?|All of the above|Feature|Unexpected|Error|1
+What is the best OS?|Linux|The one that works|Mac|Windows|2
+What is a commit?|Upload|Regret|Hope|Save|2
+Why is code review scary?|They will see everything|Judgment|Feedback|Time|1
+What is legacy code?|Sacred artifact|Untouchable|Bad code|Old code|1
+What is refactoring?|Risking everything|Cleaning|Improving|Breaking|3
+Why did dev cry?|Deadline|Bug|Merge conflict|All of above|4
+What is 1+1 in programming?|11|Depends|2|10|4
+What is recursion?|Loop|Infinite sadness|Calling itself|Function|2
+What is stack overflow?|Life|Help|Error|Website|3
+What is cloud?|Someone else's computer|Internet|Storage|Servers|1
+What is Docker?|Black magic|Container|DevOps|Tool|1
+Why do bugs appear?|Random|Universe|Code|Users|2
+What is deadline?|Suggestion|Myth|Target|Wish|1
+What is testing?|Illusion|Verification|Hope|Waste of time|2
+What is agile?|Meeting generator|Flexible|Fast|Buzzword|1
+What is scrum?|Daily meeting|Chaos|Framework|Process|2
+Why meetings exist?|Waste time|Discuss|Sync|Decide|1
+What is documentation?|Outdated|Manual|Guide|Lie|4
+What is API?|Magic pipe|Interface|Service|Bridge|1
+What is JSON?|Fancy dictionary|Text|Format|Data|1
+What is XML?|Old JSON|Pain|Markup|Format|2
+What is HTML?|Not programming|Language|Markup|Structure|1
+What is CSS?|Black magic|Style|Design|Pain|1
+What is SQL?|Data wizardry|Language|Query|Database|1
+What is NoSQL?|Chaos|Modern|No rules|Alternative|3
+What is AI job?|Prediction|Automation|Magic|Replace humans|1
+What is bug priority?|Depends who shouts|Medium|Low|High|1
+What is sprint?|Short panic|Run|Iteration|Task|1
+What is deploy?|Push|Pray|Release|Upload|2
+What is rollback?|Time travel|Undo|Fix|Return|1
+What is uptime?|Hope|Metric|Availability|Time|3
+What is downtime?|Issue|Panic|Failure|Break|2
+What is SLA?|Optimism|Agreement|Contract|Promise|1
+What is KPI?|Number magic|Goal|Metric|Target|3
+What is tech debt?|Future pain|Cost|Problem|Burden|1
+What is optimization?|Break working code|Improve|Speed|Change|1
+What is scalability?|Hope system survives|Capacity|Growth|Load|1
+What is latency?|Annoyance|Lag|Delay|Time|2
+What is throughput?|Numbers|Flow|Speed|Capacity|3
+What is cache?|Magic|Memory|Storage|Speed|1
+What is bug fix?|New bug|Patch|Solution|Temporary fix|1
+What is hotfix?|Risky move|Patch|Urgent|Quick fix|1
+What is feature?|Future bug|Addition|Option|Function|1
+What is MVP?|Barely works|Minimal|Version|Product|1
+What is UX?|Feelings|Usability|Experience|Design|3
+What is UI?|Pretty buttons|Interface|Design|Visual|2
+What is backend?|Hidden stuff|Logic|System|Server|1
+What is frontend?|Buttons and pain|Client|UI|View|1
+What is fullstack?|Burnout|Everything|Both|Magic|1
+What is junior dev?|Bug generator|Beginner|Learner|Newbie|1
+What is senior dev?|Google master|Leader|Mentor|Expert|1
+What is code?|Spaghetti|Text|Logic|Instructions|1
+What is algorithm?|Smart guess|Steps|Logic|Process|1
+What is binary?|Matrix language|System|0/1|Numbers|3
+What is CPU?|Hot thing|Processor|Brain|Unit|2
+What is RAM?|Forgetful brain|Speed|Memory|Storage|3
+What is GPU?|Gaming thing|Graphics|Processor|Parallel|1
+What is server?|Works until it doesn't|Machine|Host|System|1
+What is client?|Complainer|User|App|Browser|1
+What is internet?|Cat videos|Network|Web|System|1
+What is wifi?|Hope|Signal|Wireless|Network|1
+What is password?|123456|Secret|Key|Access|1
+What is security?|Illusion|Protection|System|Rules|1
+What is encryption?|Secret magic|Encoding|Security|Protection|1
+What is firewall?|Digital wall|Security|Barrier|Protection|1
+What is phishing?|Trick|Attack|Scam|Email|1
+What is bug report?|Story of pain|Issue|Ticket|Task|1
+What is QA?|Bug hunter|Testing|Check|Quality|1
+What is production bug?|Disaster|Error|Issue|Problem|1
+What is fix in progress?|Panic mode|Working|Trying|Coding|1
+What is code freeze?|Too late|Stop|Pause|Lock|1

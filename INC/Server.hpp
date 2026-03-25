@@ -3,6 +3,8 @@
 
 #include <iostream>
 #include <vector>
+#include <map>
+#include <algorithm>
 #include <sstream>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -20,6 +22,7 @@
 #include "Client.hpp"
 #include "Channel.hpp"
 #include "replies.hpp"
+#include "../BONUS/bot.hpp"
 
 
 #define RED "\e[1;31m"
@@ -44,6 +47,10 @@ private:
 	struct sockaddr_in add;
 	struct sockaddr_in cliadd;
 	struct pollfd new_cli;
+
+	// Trivia bot helper object
+	TriviaBot triviaBot;
+
 public:
 	Server();
 	~Server();
@@ -53,6 +60,8 @@ public:
 	int GetPort(){return this->port;}
 	int GetFd(){return this->server_socket_fd;}
 	void disconnectClient(int fd){
+		printStatus(RED, "Client", fd, "Disconnected");
+		shutdown(fd, SHUT_RDWR);
 		RmChannels(fd);
 		RemoveClient(fd);
 		RemoveFds(fd);
@@ -184,6 +193,12 @@ public:
 	void	Topic(std::string &cmd, int &fd);
 	std::string	ParseTopic(std::string &cmd);
 	void	Invite(std::string &cmd, int &fd);
+
+	// Trivia bot methods
+	void	EnableTriviaBot();
+	bool	ProcessTriviaMessage(int fd, const std::string &target, const std::string &message);
+	void	SendTriviaQuestion(int fd);
+	void	EndTriviaSession(int fd);
 };
 
 #endif

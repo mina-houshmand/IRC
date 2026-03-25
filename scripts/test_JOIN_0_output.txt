@@ -1,0 +1,28 @@
+TEST: JOIN 0 parts all channels
+
+: 001  : Welcome to the IRC server!@!
+: 003 :This server was created on Mar 23 2026 at 10:47:23
+: NICK j0test
+:j0test NICK j0test 
+: 001 j0test : Welcome to the IRC server!j0test@j0test!j0test
+:j0test!j0test@127.0.0.1 JOIN test 
+:j0test!j0test@127.0.0.1 JOIN #channelA
+: 353 j0test @ #channelA :@j0test
+: 366 j0test #channelA :END of /NAMES list
+:j0test!j0test@127.0.0.1 JOIN test 
+:j0test!j0test@127.0.0.1 JOIN #channelB
+: 353 j0test @ #channelB :@j0test
+: 366 j0test #channelB :END of /NAMES list
+:j0test!j0test@127.0.0.1 JOIN test 
+:j0test!j0test@127.0.0.1 JOIN #channelC
+: 353 j0test @ #channelC :@j0test
+: 366 j0test #channelC :END of /NAMES list
+:j0test!~j0test@localhost PART #channelA Left all channels
+:j0test!~j0test@localhost PART #channelB Left all channels
+:j0test!~j0test@localhost PART #channelC Left all channels
+: 403 j0test #channelA :No such channel
+
+If JOIN 0 worked, you should see PART broadcasts for channelA, channelB, and channelC.
+Also, PRIVMSG #channelA should return ERR_CANNOTSENDTOCHAN (404) or ERR_NOSUCHCHANNEL (403)
+
+Finished testing JOIN 0!

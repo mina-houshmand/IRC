@@ -1,9 +1,14 @@
 #include "../INC/Server.hpp"
 
 bool Server::isBotfull = false;
-Server::Server(){this->server_socket_fd = -1;}
+Server::Server(){
+	this->server_socket_fd = -1;
+}
 Server::~Server(){}
-Server::Server(Server const &src){*this = src;}
+Server::Server(Server const &src){
+	*this = src;
+}
+
 Server &Server::operator=(Server const &src){
 	if (this != &src){
 		/*
@@ -40,7 +45,29 @@ Channel *Server::GetChannel(std::string name)
 	}
 	return NULL;
 }
+
+void Server::EnableTriviaBot()
+{
+	triviaBot.Enable(*this);
+}
+
+bool Server::ProcessTriviaMessage(int fd, const std::string &target, const std::string &message)
+{
+	return triviaBot.ProcessMessage(*this, fd, target, message);
+}
+
+void Server::SendTriviaQuestion(int fd)
+{
+	triviaBot.SendTriviaQuestion(*this, fd);
+}
+
+void Server::EndTriviaSession(int fd)
+{
+	triviaBot.EndTriviaSession(fd);
+}
+
 //---------------//Getters
+
 //---------------//Setters
 void Server::SetFd(int fd){this->server_socket_fd = fd;}
 void Server::SetPort(int port){this->port = port;}

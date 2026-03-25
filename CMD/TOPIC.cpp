@@ -60,9 +60,9 @@ void Server::Topic(std::string &cmd, int &fd)
     std::string searchName = channelName;
     
     // Strip # or & prefix for comparison
-    if (!searchName.empty() && (searchName[0] == '#' || searchName[0] == '&'))
-        searchName = searchName.substr(1);
-    
+    // if (!searchName.empty() && (searchName[0] == '#' || searchName[0] == '&'))
+    //     ;
+
     // 2. Find and validate channel existence
     Channel *channel = GetChannel(searchName);
     if (!channel)

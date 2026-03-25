@@ -81,9 +81,6 @@ void Server::QUIT(std::string cmd, int fd)
     // 2-3. Build and broadcast quit message to all channels
     BroadcastQuit(fd, reason);
 
-    // 4-5. Remove user from all channels and cleanup empty ones
-    RmChannels(fd);
-
-    // 6. Close connection (handled by main loop after QUIT returns)
-    // The client will be removed from fds vector and closed
+    // 4-6. Remove user from all channels, cleanup empty ones and close the connection
+    disconnectClient(fd);
 }

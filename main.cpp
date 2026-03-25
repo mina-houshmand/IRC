@@ -54,14 +54,26 @@ void setupSignals()
 int main(int ac, char **av)
 {
 	Server ser;
-	if (ac != 3)
+	bool bonus = false;
+	if (ac != 3 && ac != 4)
 	{
-		ser.printMessage("Usage: " + std::string(av[0]) + " <port number> <password>");
+		ser.printMessage("Usage: " + std::string(av[0]) + " <port number> <password> [--bonus]");
 		return 1;
 	}
+
+	if (ac == 4) {
+		std::string flag = av[3];
+		if (flag == "--bonus")
+			bonus = true;
+		else {
+			ser.printMessage("Unknown flag: " + flag);
+			return 1;
+		}
+	}
+
 	ser.printMessage("---- SERVER ----");
 	try
-	{	
+	{
 		setupSignals();
 		
 		if (!isPortValid(av[1]))
@@ -77,7 +89,10 @@ int main(int ac, char **av)
 			ser.printMessage("Password must be 1-20 characters");
 			return 1;
 		}
-		
+
+		if (bonus)
+			ser.EnableTriviaBot();
+
 		ser.server_config(av[1], av[2]);
 	}
 	catch(const std::exception& e)

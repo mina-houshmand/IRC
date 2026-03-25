@@ -71,8 +71,8 @@ void Server::SendToChannel(const std::string &channelName, int fd, const std::st
     std::string searchName = channelName;
 
     // Strip # or & prefix for comparison
-    if (!searchName.empty() && (searchName[0] == '#' || searchName[0] == '&'))
-        searchName = searchName.substr(1);
+    // if (!searchName.empty() && (searchName[0] == '#' || searchName[0] == '&'))
+    //     ;
 
     // Find the channel
     Channel *channel = GetChannel(searchName);
@@ -165,6 +165,12 @@ void Server::PRIVMSG(std::string cmd, int fd)
     for (size_t i = 0; i < targets.size(); i++)
     {
         std::string target = targets[i];
+
+        // Trivia bot intercepts channel traffic for #trivia
+        if (target == "#trivia" && ProcessTriviaMessage(fd, target, message))
+        {
+            continue;
+        }
 
         // 3. Check if target is channel or nickname
         if (!target.empty() && (target[0] == '#' || target[0] == '&'))

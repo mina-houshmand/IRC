@@ -1,89 +1,89 @@
-Starting MODE tests... Suffix: 314
+Starting MODE tests... Suffix: 148
 
 === TEST 1: MODE +i (invite only) ===
-CMD: MODE #m1314 +i
+CMD: MODE #m1148 +i
 : 001  : Welcome to the IRC server!@!
-: 003 :This server was created on Mar 12 2026 at 18:16:22
+: 003 :This server was created on Mar 23 2026 at 10:47:23
 : NICK u1
-:u1 NICK u1 #
+:u1 NICK u1 
 : 001 u1 : Welcome to the IRC server!u1@u1!u1
-:u1!u1@127.0.0.1 JOIN #test 
-:u1!u1@127.0.0.1 JOIN #m1314
-: 353 u1 @ #m1314 :@u1
-: 366 u1 #m1314 :END of /NAMES list
-:u1!~u1@localhost MODE #m1314 +i 
-Expected: :localhost MODE #m1314 +i
+:u1!u1@127.0.0.1 JOIN test 
+:u1!u1@127.0.0.1 JOIN #m1148
+: 353 u1 @ #m1148 :@u1
+: 366 u1 #m1148 :END of /NAMES list
+:u1!~u1@localhost MODE #m1148 +i 
+Expected: :localhost MODE #m1148 +i
 
 === TEST 2: MODE +t (topic restrict) ===
-CMD: MODE #m2314 +t
+CMD: MODE #m2148 +t
 : 001  : Welcome to the IRC server!@!
-: 003 :This server was created on Mar 12 2026 at 18:16:22
+: 003 :This server was created on Mar 23 2026 at 10:47:23
 : NICK u2
-:u2 NICK u2 #
+:u2 NICK u2 
 : 001 u2 : Welcome to the IRC server!u2@u2!u2
-:u2!u2@127.0.0.1 JOIN #test 
-:u2!u2@127.0.0.1 JOIN #m2314
-: 353 u2 @ #m2314 :@u2
-: 366 u2 #m2314 :END of /NAMES list
-:u2!~u2@localhost MODE #m2314 +t 
-Expected: :localhost MODE #m2314 +t
+:u2!u2@127.0.0.1 JOIN test 
+:u2!u2@127.0.0.1 JOIN #m2148
+: 353 u2 @ #m2148 :@u2
+: 366 u2 #m2148 :END of /NAMES list
+:u2!~u2@localhost MODE #m2148 +t 
+Expected: :localhost MODE #m2148 +t
 
 === TEST 3: MODE +k (set key) ===
-CMD: MODE #m3314 +k secret
+CMD: MODE #m3148 +k secret
 : 001  : Welcome to the IRC server!@!
-: 003 :This server was created on Mar 12 2026 at 18:16:22
+: 003 :This server was created on Mar 23 2026 at 10:47:23
 : NICK u3
-:u3 NICK u3 #
+:u3 NICK u3 
 : 001 u3 : Welcome to the IRC server!u3@u3!u3
-:u3!u3@127.0.0.1 JOIN #test 
-:u3!u3@127.0.0.1 JOIN #m3314
-: 353 u3 @ #m3314 :@u3
-: 366 u3 #m3314 :END of /NAMES list
-:u3!~u3@localhost MODE #m3314 +k secret
-Expected: :localhost MODE #m3314 +k secret
+:u3!u3@127.0.0.1 JOIN test 
+:u3!u3@127.0.0.1 JOIN #m3148
+: 353 u3 @ #m3148 :@u3
+: 366 u3 #m3148 :END of /NAMES list
+:u3!~u3@localhost MODE #m3148 +k secret
+Expected: :localhost MODE #m3148 +k secret
 
 === TEST 4: MODE +l (set limit) ===
-CMD: MODE #m4314 +l 10
+CMD: MODE #m4148 +l 10
 : 001  : Welcome to the IRC server!@!
-: 003 :This server was created on Mar 12 2026 at 18:16:22
+: 003 :This server was created on Mar 23 2026 at 10:47:23
 : NICK u4
-:u4 NICK u4 #
+:u4 NICK u4 
 : 001 u4 : Welcome to the IRC server!u4@u4!u4
-:u4!u4@127.0.0.1 JOIN #test 
-:u4!u4@127.0.0.1 JOIN #m4314
-: 353 u4 @ #m4314 :@u4
-: 366 u4 #m4314 :END of /NAMES list
-:u4!~u4@localhost MODE #m4314 +l 10
-Expected: :localhost MODE #m4314 +l 10
+:u4!u4@127.0.0.1 JOIN test 
+:u4!u4@127.0.0.1 JOIN #m4148
+: 353 u4 @ #m4148 :@u4
+: 366 u4 #m4148 :END of /NAMES list
+:u4!~u4@localhost MODE #m4148 +l 10
+Expected: :localhost MODE #m4148 +l 10
 
 === TEST 5: MODE query (get modes) ===
-CMD: MODE #m5314
+CMD: MODE #m5148
 : 001  : Welcome to the IRC server!@!
-: 003 :This server was created on Mar 12 2026 at 18:16:22
+: 003 :This server was created on Mar 23 2026 at 10:47:23
 : NICK u5
-:u5 NICK u5 #
+:u5 NICK u5 
 : 001 u5 : Welcome to the IRC server!u5@u5!u5
-:u5!u5@127.0.0.1 JOIN #test 
-:u5!u5@127.0.0.1 JOIN #m5314
-: 353 u5 @ #m5314 :@u5
-: 366 u5 #m5314 :END of /NAMES list
-: 324 u5 #m5314 
-: 329 u5 #m5314 1773336473
-Expected: 324 ... #m5314 +modes
+:u5!u5@127.0.0.1 JOIN test 
+:u5!u5@127.0.0.1 JOIN #m5148
+: 353 u5 @ #m5148 :@u5
+: 366 u5 #m5148 :END of /NAMES list
+: 324 u5 #m5148 
+: 329 u5 #m5148 1774265074
+Expected: 324 ... #m5148 +modes
 
 === TEST 6: MODE - not operator ===
 Setup: join channel without op
-CMD: MODE #m6314 +i
+CMD: MODE #m6148 +i
 : 001  : Welcome to the IRC server!@!
-: 003 :This server was created on Mar 12 2026 at 18:16:22
+: 003 :This server was created on Mar 23 2026 at 10:47:23
 : NICK u6
-:u6 NICK u6 #
+:u6 NICK u6 
 : 001 u6 : Welcome to the IRC server!u6@u6!u6
-:u6!u6@127.0.0.1 JOIN #test 
-:u6!u6@127.0.0.1 JOIN #m6314
-: 353 u6 @ #m6314 :@u6
-: 366 u6 #m6314 :END of /NAMES list
-:u6!~u6@localhost MODE #m6314 +i 
+:u6!u6@127.0.0.1 JOIN test 
+:u6!u6@127.0.0.1 JOIN #m6148
+: 353 u6 @ #m6148 :@u6
+: 366 u6 #m6148 :END of /NAMES list
+:u6!~u6@localhost MODE #m6148 +i 
 Expected: 482 ... :You're not channel operator
 
 === DONE ===
