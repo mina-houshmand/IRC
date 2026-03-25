@@ -1,4 +1,4 @@
-*This project has been created as part of the 42 curriculum by oshcheholev.*
+*This project has been created as part of the 42 curriculum by mhoushma@student.42vienna.com, oshcheho@student.42vienna.com*
 
 # Description
 
