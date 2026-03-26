@@ -40,7 +40,7 @@ void Server::NotifyJoin(Client *client, Channel &channel)
     // 5. Bot welcome message for #trivia when a client joins
     if (channel.GetName() == "#trivia") {
         _sendResponse(
-            ":trivia_bot!~bot@localhost PRIVMSG #trivia :Welcome to the TRIVIA! To start the trivia write start\r\n",
+            ":trivia_bot!~bot@localhost PRIVMSG #trivia :Welcome to the TRIVIA! To start the trivia write PRIVMSG #trivia :start\r\n",
             client->GetFd()
         );
     }

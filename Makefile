@@ -4,7 +4,7 @@ CC = c++
 CFLAGS = -Wall -Wextra -Werror -std=c++98 -g
 DEPFLAGS = -MMD -MP
 SRCS = main.cpp SRC/Authenti.cpp SRC/Channel.cpp SRC/Client.cpp SRC/Server.cpp \
-	CMD/INVITE.cpp CMD/JOIN.cpp CMD/KICK.cpp CMD/MODE.cpp CMD/PART.cpp CMD/PRIVMSG.cpp CMD/QUIT.cpp CMD/TOPIC.cpp \
+	CMD/HELP.cpp CMD/INVITE.cpp CMD/JOIN.cpp CMD/KICK.cpp CMD/MODE.cpp CMD/PART.cpp CMD/PRIVMSG.cpp CMD/QUIT.cpp CMD/TOPIC.cpp \
 	SRC/new_connection.cpp SRC/data_transform.cpp \
 	SRC/server_config.cpp SRC/set_sever_socket.cpp SRC/pars_cmds.cpp \
 	SRC/check_registaration.cpp BONUS/bot.cpp

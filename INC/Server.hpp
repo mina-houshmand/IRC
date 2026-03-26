@@ -194,6 +194,7 @@ public:
 	std::string	ParseTopic(std::string &cmd);
 	void	Invite(std::string &cmd, int &fd);
 
+
 	// Trivia bot methods
 	void	EnableTriviaBot();
 	bool	ProcessTriviaMessage(int fd, const std::string &target, const std::string &message);

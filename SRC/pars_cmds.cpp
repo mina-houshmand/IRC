@@ -29,7 +29,7 @@ void Server::handleClientCommand(std::string &cmd, int fd)
 	std::string command = tokens[0];
 	cmd_toUpper(command);
 	
-	std::cout << "Received command from Client <" << fd << ">: " << command << std::endl;
+	std::cout << "DEBUG: Received command from Client <" << fd << ">: " << command << std::endl;
 	std::cout << "DEBUG: Full command: " << cmd << std::endl;
 
 	// Check if client exists before processing the command
@@ -67,6 +67,8 @@ void Server::handleClientCommand(std::string &cmd, int fd)
 			PRIVMSG(cmd, fd);
 		else if (command == "INVITE")
 			Invite(cmd,fd);
+		else if (command == "HELP")
+			HELP(fd);
 		else
 			_sendResponse(ERR_CMDNOTFOUND(GetClient(fd)->GetNickName(),command),fd);
 	}
