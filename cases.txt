@@ -1,0 +1,31 @@
+
+1. **Basic Functionality**
+
+   * Core commands (`PASS`, `NICK`, `USER`, `JOIN`, `PRIVMSG`, `PART`, `QUIT`) work correctly.
+   * Channel modes (`i`, `t`, `k`, `o`, `l`) function with multiple clients.
+   * Multi-client communication follows RFC 1459.
+   * **KICK command is not implemented.**
+
+2. **Connection & Nickname Issues**
+
+   * Reconnecting with the same nickname after an unexpected disconnect may fail.
+   * `MODE #channel -o <user>` may sometimes fail to grant operator rights.
+   * Invalid channel names can cause crashes.
+
+3. **Input Limits**
+
+   * `USER` usernames can exceed 200 characters.
+   * Messages longer than 4000 characters are accepted.
+   * No strict input length enforcement.
+
+4. **Client Compatibility**
+
+   * Works with **irssi, netcat (nc), and HexChat**.
+
+5. **Channel Operator & KICK Behavior**
+
+   * The last operator can be kicked without assigning a new one.
+   * Ideally, the first user in the channel should become operator.
+   * Other channel modes work correctly.
+   * LAN connections function as expected.
+

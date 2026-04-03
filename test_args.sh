@@ -98,6 +98,7 @@ run_test_expect_fail "Only port" "$SERVER 2000"
 # INVALID PORTS
 # =========================
 run_test_expect_fail "Port is string" "$SERVER abc 123"
+run_test_expect_fail "Port is string" "$SERVER 2abc2 123"
 run_test_expect_fail "Negative port" "$SERVER -1 123"
 run_test_expect_fail "Port too large" "$SERVER 70000 123"
 

@@ -24,13 +24,11 @@ What poll() does
     When it returns:
         It sets revents for the sockets that had activity
 
-
 poll return value-->
 poll() only tells which sockets are ready
     > 0 -->Number of sockets that have events (ready to read/write)
     0   --> Timeout occurred (not used here because -1)
     -1  --> Error occurred (or signal interrupted it)
-
 
 struct pollfd {
     int   fd;       // the socket/file descriptor
