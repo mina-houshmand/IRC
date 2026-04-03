@@ -31,16 +31,21 @@ bool isPortValid(std::string port)
 
 bool isPasswordValid(std::string password)
 {
-	const int MAX_PASSWORD_LENGTH = 20;
+    const int MAX_PASSWORD_LENGTH = 20;
+    if (password.empty())
+    {return false;}
 	
-	// Check 1: Password is not empty
-	if (password.empty())
+	bool isonlywhiltespace = true;
+	for(size_t i = 0; i < password.length(); ++i) {
+		if (!std::isspace(password[i])) {
+			isonlywhiltespace = false;
+			break;
+		}
+	}
+	if (isonlywhiltespace)
 		return false;
-	
-	// Check 2: Password length <= 20
-	bool isValidLength = (password.length() <= MAX_PASSWORD_LENGTH);
-	
-	return isValidLength;
+    bool isValidLength = (password.length() <= MAX_PASSWORD_LENGTH);
+    return isValidLength;
 }
 
 void setupSignals()
@@ -57,6 +62,7 @@ int main(int ac, char **av)
 	bool bonus = false;
 	if (ac != 3 && ac != 4)
 	{
+		ser.printError("Error: Invalid number of arguments!");
 		ser.printMessage("Usage: " + std::string(av[0]) + " <port number> <password> [--bonus]");
 		return 1;
 	}
@@ -86,7 +92,7 @@ int main(int ac, char **av)
 		if (!isPasswordValid(av[2]))
 		{
 			ser.printError("Error: Invalid password!");
-			ser.printMessage("Password must be 1-20 characters");
+			ser.printMessage("Password must be 1-20 characters & cannot be only whitespace");
 			return 1;
 		}
 
