@@ -1,8 +1,8 @@
 #include "../INC/Client.hpp"
+#include <stdexcept>
 
 Client::Client()
     : fd(-1)
-    , isOperator(false)
     , registered(false)
     , logedin(false)
     , nickname("")

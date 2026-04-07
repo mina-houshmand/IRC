@@ -49,6 +49,17 @@ bool Server::SplitPrivMsg(std::string cmd, std::vector<std::string> &targets, st
         }
     }
 
+    // If no ':' was found but there are extra tokens, treat the remaining tokens as the message
+    if (message.empty() && parts.size() >= 3) {
+        std::string m;
+        for (size_t i = 2; i < parts.size(); ++i) {
+            if (i > 2) m += " ";
+            m += parts[i];
+        }
+        if (!m.empty())
+            message = ":" + m;
+    }
+
     // Check if any valid targets remain
     if (targets.empty())
     {
@@ -100,7 +111,8 @@ void Server::SendToChannel(const std::string &channelName, int fd, const std::st
               << " | " << "\033[0;36mFrom:\033[0m " << clientNick 
               << " | " << "\033[0;35mSent:\033[0m " << ss.str() << std::endl;
     
-    channel->sendTo_all(ss.str(), fd);
+    // Send to all members including the sender so the sender sees their own message
+    channel->sendTo_all(ss.str());
 }
 
 // Send message to a user

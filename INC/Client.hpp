@@ -1,8 +1,6 @@
 #ifndef CLIENT_HPP
 #define CLIENT_HPP
 
-#include "Server.hpp"
-#include "Channel.hpp"
 #include <arpa/inet.h>
 #include <string>
 #include <vector>
@@ -14,7 +12,6 @@ class Client
 {
 private:
 	int fd;
-	bool isOperator;
 	bool registered;
 	bool logedin;
 	std::string nickname;

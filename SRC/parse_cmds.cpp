@@ -22,6 +22,17 @@ void Server::handleClientCommand(std::string &cmd, int fd)
 	std::string trimmedCmd = cmd;
     trimLeadingWhitespace(trimmedCmd);
 
+	// Enforce RFC 512-byte maximum message length (including CRLF).
+	// If a client sends a line longer than 512 bytes, truncate it to a safe payload
+	// length (510 bytes) so there's room for terminating CRLF when sending.
+	if (trimmedCmd.size() > 510) {
+		std::cerr << "Warning: Truncating command from fd " << fd << " to 510 bytes" << std::endl;
+		trimmedCmd = trimmedCmd.substr(0, 510);
+	}
+
+	// Use the (possibly truncated) trimmed command for the rest of processing.
+	cmd = trimmedCmd;
+
 	std::vector<std::string> tokens = split_cmd(cmd);
 	if (tokens.empty())
 		return;
