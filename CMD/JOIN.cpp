@@ -19,7 +19,7 @@ Rules:
 void Server::NotifyJoin(Client *client, Channel &channel) 
 {
     // 1. Send JOIN message to the client
-    _sendResponse(RPL_JOINMSG(client->getHostname(), client->getIpAdd(), channel.GetName()), client->GetFd());
+    _sendResponse(RPL_JOINMSG(client->GetPrefix(), channel.GetName()), client->GetFd());
 
     // 2. Send the channel topic (if set)
     if (!channel.GetTopicName().empty()) 
@@ -35,7 +35,7 @@ void Server::NotifyJoin(Client *client, Channel &channel)
     );
 
     // 4. Notify all other users in the channel about the new join
-    channel.sendTo_all(RPL_JOINMSG(client->getHostname(), client->getIpAdd(), channel.GetName()), client->GetFd());
+    channel.sendTo_all(RPL_JOINMSG(client->GetPrefix(), channel.GetName()), client->GetFd());
 
     // 5. Bot welcome message for #trivia when a client joins
     if (channel.GetName() == "#trivia") {

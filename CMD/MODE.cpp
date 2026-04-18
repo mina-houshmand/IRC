@@ -299,8 +299,7 @@ void	Server::mode_command(std::string &cmd, int fd)
 	// 6. Broadcast mode changes to all channel members
 	if (!chain.empty())
 	{
-		std::string hostname = client->GetNickName() + "!~"
-			+ client->GetUserName() + "@localhost";
+		std::string hostname = client->GetPrefix();
 		channel->sendTo_all(RPL_CHANGEMODE(hostname,
 			channel->GetName(), chain, arguments));
 	}

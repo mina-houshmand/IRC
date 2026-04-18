@@ -37,7 +37,7 @@ void Server::client_authen(int fd, std::string cmd)
 		*/
 		if(pass == password){
 			std::cout << "DEBUG:Client <" << fd << "> provided correct password." << std::endl;
-			_sendResponse(RPL_CONNECTED(cli->GetNickName(), cli->GetUserName(), cli->getHostname()), fd);
+			_sendResponse(RPL_CONNECTED(cli->GetNickName(), cli->GetPrefix()), fd);
 			cli->setRegistered(true);
 			_sendResponse(RPL_CREATED(), fd);
 		}
@@ -196,7 +196,7 @@ void Server::set_nickname(std::string cmd, int fd)
 				if(oldnick == "*" && !cli->GetUserName().empty())
 				{
 					cli->setLogedin(true);
-					_sendResponse(RPL_CONNECTED(cli->GetNickName(), cli->GetUserName(), cli->getHostname()), fd);
+					_sendResponse(RPL_CONNECTED(cli->GetNickName(), cli->GetPrefix()), fd);
 					_sendResponse(RPL_NICKCHANGE(cli->GetNickName(),cmd), fd);
 				}
 				else
@@ -214,7 +214,7 @@ void Server::set_nickname(std::string cmd, int fd)
 	if(cli && cli->getRegistered() && !cli->GetUserName().empty() && !cli->GetNickName().empty() && cli->GetNickName() != "*" && !cli->GetLogedIn())
 	{
 		cli->setLogedin(true);
-		_sendResponse(RPL_CONNECTED(cli->GetNickName(), cli->GetUserName(), cli->getHostname()), fd);
+		_sendResponse(RPL_CONNECTED(cli->GetNickName(), cli->GetPrefix()), fd);
 	}
 }
 
@@ -284,6 +284,6 @@ void	Server::set_username(std::string& cmd, int fd)
 	//check if the client is fully registered
 	if(cli && cli->getRegistered() && !cli->GetUserName().empty() && !cli->GetNickName().empty() && cli->GetNickName() != "*"  && !cli->GetLogedIn()){
 		cli->setLogedin(true);
-		_sendResponse(RPL_CONNECTED(cli->GetNickName(), cli->GetUserName(), cli->getHostname()), fd);
+		_sendResponse(RPL_CONNECTED(cli->GetNickName(), cli->GetPrefix()), fd);
 	}
 }

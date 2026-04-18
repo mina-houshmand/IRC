@@ -114,7 +114,7 @@ void Server::Topic(std::string &cmd, int &fd)
     
     // Broadcast topic change to all channel members
     std::stringstream ss;
-    ss << ":" << clientNick << "!~" << client->GetUserName() << "@localhost TOPIC " 
+    ss << ":" << client->GetPrefix() << " TOPIC " 
        << channelName << " :" << newTopic << "\r\n";
     
     // DEBUG: Topic change

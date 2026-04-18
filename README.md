@@ -29,13 +29,29 @@ After connecting with an IRC client, send the usual IRC lines:
 PASS <password>
 NICK <nickname>
 USER <username> 0 * :<realname>
+```
+
+After registration process user can send other commands:
+
+```text
 JOIN #channel
 PRIVMSG #channel :hello
 PART #channel
 QUIT :bye
+TOPIC #channel :topic
 ```
 
-Channel names must start with `#` or `&`.
+Administrator (operator) commands
+
+```text
+MODE #channel +-itkol
+KICK #channel user 
+INVITE user #channel
+```
+
+
+
+Channel names must start with `#`.
 
 ## Bonus bot usage
 

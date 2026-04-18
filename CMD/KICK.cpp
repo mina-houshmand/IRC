@@ -94,7 +94,7 @@ void Server::KICK(std::string cmd, int fd)
         // 6. Build the KICK message
         // Format: :<kicker>!~<user>@<host> KICK <channel> <target> :<reason>
         std::stringstream ss;
-        ss << ":" << clientNick << "!~" << client->GetUserName() << "@" << client->getHostname() 
+        ss << ":" << client->GetPrefix() 
            << " KICK " << channelName << " " << target << " :" << finalReason << "\r\n";
         
         std::string kickMsg = ss.str();

@@ -53,9 +53,11 @@ bool Client::GetInviteChannel(std::string &ChName){
 	return false;
 }
 std::string Client::getIpAdd(){return ipadd;}
-std::string Client::getHostname(){
-	std::string hostname = this->GetNickName() + "!" + this->GetUserName();
-	return hostname;
+std::string Client::GetPrefix(){
+        std::string ip = ipadd;
+        if (ip.empty()) ip = "127.0.0.1";
+        std::string prefix = this->GetNickName() + "!~" + this->GetUserName() + "@" + ip;
+        return prefix;
 }
 
 void Client::SetClient_Fd(int fd){

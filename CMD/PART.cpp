@@ -96,7 +96,7 @@ void Server::ProcessPartChannel(const std::string &channelName, int fd, const st
 
     // 4. Build part message with optional reason
     std::stringstream ss;
-    ss << ":" << clientNick << "!~" << client->GetUserName() << "@localhost PART " << channelName;
+    ss << ":" << client->GetPrefix() << " PART " << channelName;
     if (!reason.empty())
         ss << " " << reason;
     ss << "\r\n";

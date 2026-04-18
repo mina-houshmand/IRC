@@ -40,7 +40,7 @@ void Server::BroadcastQuit(int fd, const std::string &reason)
 
     // Build quit message
     std::stringstream ss;
-    ss << ":" << clientNick << "!~" << userName << "@localhost QUIT";
+    ss << ":" << client->GetPrefix() << " QUIT";
     if (!reason.empty())
         ss << " " << reason;
     ss << "\r\n";

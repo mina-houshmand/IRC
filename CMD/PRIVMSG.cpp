@@ -110,7 +110,7 @@ void Server::SendToChannel(const std::string &channelName, int fd, const std::st
 
     // Build and broadcast message
     std::stringstream ss;
-    ss << ":" << clientNick << "!~" << client->GetUserName() << "@localhost PRIVMSG " << channelName << " " << message << "\r\n";
+    ss << ":" << client->GetPrefix() << " PRIVMSG " << channelName << " " << message << "\r\n";
     
     // DEBUG: Channel message broadcast
     std::cout << "\033[0;35m[PRIVMSG-CHAN]\033[0m -> " << "\033[0;36mChannel:\033[0m " << channelName 
@@ -149,7 +149,7 @@ void Server::SendToUser(const std::string &nickname, int fd, const std::string &
 
     // Build and send message
     std::stringstream ss;
-    ss << ":" << senderNick << "!~" << sender->GetUserName() << "@localhost PRIVMSG " << nickname << " " << message << "\r\n";
+    ss << ":" << sender->GetPrefix() << " PRIVMSG " << nickname << " " << message << "\r\n";
     
     // DEBUG: Direct message send
     std::cout << "\033[0;35m[PRIVMSG-DM]\033[0m -> " << "\033[0;36mFrom:\033[0m " << senderNick 

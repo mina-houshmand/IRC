@@ -45,7 +45,7 @@ public:
 
 	// -------------------------------------------------------------------------------------------------
 	std::string getIpAdd();
-	std::string getHostname();
+	std::string GetPrefix();
 
 	void SetNickname(std::string& nickName);
 	void setLogedin(bool value);

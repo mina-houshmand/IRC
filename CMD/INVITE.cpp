@@ -97,7 +97,7 @@ void Server::Invite(std::string &cmd, int &fd)
 
     // 8. Send INVITE message to target
     // Format: :<inviter_nick>!~<inviter_user>@<inviter_host> INVITE <target_nick> :<channel>
-    std::string inviteMsg = ":" + clientNick + "!~" + client->GetUserName() + "@" + client->getHostname() + 
+    std::string inviteMsg = ":" + client->GetPrefix() + 
                             " INVITE " + targetNick + " :" + channelName + "\r\n";
     _sendResponse(inviteMsg, targetClient->GetFd());
 }
