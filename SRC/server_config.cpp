@@ -4,10 +4,12 @@
 // error even when the user pressed Ctrl+C (which is normal).
 
 int Server::performPoll_request() {
+    // std::cerr << YEL << "[POLL] Calling poll()..." << WHI << std::endl;
     int pollResult = poll(&fds[0], fds.size(), -1);
     if (pollResult == -1 && !Server::Signal) {
         throw std::runtime_error("Failed: poll request");
     }
+    // std::cerr << YEL << "[POLL] poll() returned: " << pollResult << " socket(s) ready" << WHI << std::endl;
     return pollResult;
 }
 //"Check if this socket is ready to be read from."

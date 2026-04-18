@@ -1,7 +1,7 @@
 NAME_BONUS = bot
 NAME = ircserv
 CC = c++
-CFLAGS = -Wall -Wextra -Werror -std=c++98 -g
+CFLAGS = -Wall -Wextra -Werror -std=c++98 
 DEPFLAGS = -MMD -MP
 SRCS = main.cpp SRC/Authentication.cpp SRC/Channel.cpp SRC/Client.cpp SRC/Server.cpp \
 	CMD/HELP.cpp CMD/INVITE.cpp CMD/JOIN.cpp CMD/KICK.cpp CMD/MODE.cpp CMD/PART.cpp CMD/PRIVMSG.cpp CMD/QUIT.cpp CMD/TOPIC.cpp \

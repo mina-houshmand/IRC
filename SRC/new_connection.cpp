@@ -10,6 +10,7 @@ Returns:
 */
 int Server::acceptNewClient()
 {
+    std::cerr << BLU << "[ACCEPT] Calling accept()..." << WHI << std::endl;
     memset(&cliadd, 0, sizeof(cliadd));
     socklen_t addrLen = sizeof(cliadd);
     
