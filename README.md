@@ -35,7 +35,7 @@ After registration process user can send other commands:
 
 ```text
 JOIN #channel
-PRIVMSG #channel :hello
+PRIVMSG #channel :hello  | PRIVMSG user :hello
 PART #channel
 QUIT :bye
 TOPIC #channel :topic
