@@ -87,7 +87,7 @@ static bool valid_nickname_characters(char c)
 bool Server::is_validNickname(std::string& nickname)
 {
 		
-	if(nickname.empty() || nickname.size() > 20)
+	if(nickname.empty() || nickname.size() > 9)
 		return false;
 	if(!valid_first_character(nickname[0]))
 		return false;
@@ -238,7 +238,7 @@ static  bool valid_username_characters(char c)
 static bool is_validUsername(std::string& username)
 {
 		
-	if(username.empty() || username.size() > 20)
+	if(username.empty() || username.size() > 10)
 		return false;
 	for(size_t i = 0; i < username.size(); i++)
 	{
