@@ -10,6 +10,18 @@ int Server::performPoll_request() {
     }
     return pollResult;
 }
+//"Check if this socket is ready to be read from."
+/*
+Socket is ready to read:
+revents = 0x0001 (POLLIN set)
+POLLIN  = 0x0001
+AND     = 0x0001 ✅ → returns true
+
+Socket is NOT ready:
+revents = 0x0000 (nothing set)
+POLLIN  = 0x0001
+AND     = 0x0000 ❌ → returns false
+*/
 
 bool Server::isSocketReadable(const pollfd& pfd) {
     int readFlag = pfd.revents & POLLIN;  // Extract POLLIN bit
