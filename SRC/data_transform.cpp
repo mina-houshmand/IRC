@@ -35,7 +35,7 @@ void Server::data_transform(int fd)
 
 	char buff[1024];
 	memset(buff, 0, sizeof(buff));
-	                               //**change name to GetClientByFd
+	//**change name to GetClientByFd
 	Client *cli = GetClient(fd);
 	ssize_t bytes = recv(fd, buff, sizeof(buff) - 1 , 0);
 	if(bytes <= 0)

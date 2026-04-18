@@ -9,19 +9,12 @@ A client is a program that calls it
 The network (IP + port) is the phone number
 The socket is the phone device itself
 
-
-
 1-Create a socket → get a phone
 2-Configure the socket → set rules for the phone
 3-Bind → give it an address (IP + port)
 4-Listen → start waiting for calls
 5-Accept → pick up calls (not shown yet in your code)
-Your function does steps 1–4.
 
-
-
-server_socket = socket(AF_INET, SOCK_STREAM, 0);
-server_socket holds a valid FD for the socket you created
 
 -What kind of address will this socket use? --> AF_INET → IPv4 (most common)
 												AF_INET6 → IPv6
@@ -31,38 +24,11 @@ server_socket holds a valid FD for the socket you created
 
 
 
-where should this socket live?
-That’s where structures come in.
-
-#include <netinet/in.h>
-
-struct sockaddr_in server_address;
-
-This structure stores:
--IP version
--IP address
--Port number
-
 struct sockaddr_in {
     sa_family_t    sin_family;   // Address family IPv4 or IPv6
     in_port_t      sin_port;     // Port number
     struct in_addr sin_addr;     // IP address
 };
-
-
-
-
-After creating the socket and preparing its address structure with 
-the desired IP and port, the socket must be configured using socket 
-options such as address reuse and non-blocking mode. Once configured,
-the socket can be bound to the address and placed into listening mode
-
-to accept incoming connections.
-1-Create socket → get FD
-2-Prepare address → IP + port
-3-Configure socket → options + behavior
-4-Bind → attach address
-5-Listen → accept connections
 
 
 
@@ -77,23 +43,6 @@ to accept incoming connections.
 📡 Exchanged data with the client (send(), recv())
 ❌ Closed the client socket (close())
 🔒 Closed the server socket (close())
-
-
-	Step-by-step flow
-
-	Create listening socket → server_socket_fd
-	Add it to pollfd (new_cli) to watch for incoming connections
-	Call poll() → OS tells you a client is trying to connect
-	Call accept() → returns new client socket FD
-	Add that new client FD to pollfd list → now you can monitor it for data
-
-	//here we created the socket and we are adding it to the pollfd list
-	//and then we add each socket to the fds vector to monitor it
-	//then in the main loop we call poll on the fds vector
-
-	Tell poll():
-		- watch this socket
-		-  notify when it sends data or disconnects
 	
 */
 
@@ -109,8 +58,18 @@ void Server::initializeAddress(struct sockaddr_in &address, int port) {
     std::memset(&address, 0, sizeof(address));
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = INADDR_ANY;     //Accept connections on any network interface
-    address.sin_port = htons(port);
+    address.sin_port = htons(port);         // Convert port to network format
 }
+
+/*
+to accept incoming connections:
+
+Create Socket → socket() returns file descriptor
+Configure → setsockopt() (reuse port), fcntl() (non-blocking)
+Bind → bind() Attach the IP address - port to the socket
+Listen → listen() enters listening mode
+Poll → addSocketToPoll() adds to monitoring list
+*/
 
 void Server::set_sever_socket()
 {
@@ -126,6 +85,7 @@ void Server::set_sever_socket()
 	if (fcntl(server_socket_fd, F_SETFL, O_NONBLOCK) == -1)
 		throw(std::runtime_error("Failed to set socket to non-blocking mode"));
 
+	// Configure where the socket listens (IP (0.0.0.0) + port)
     initializeAddress(add, port);
 
 	if (bind(server_socket_fd, (struct sockaddr *)&add, sizeof(add)) == -1)
@@ -159,7 +119,7 @@ By default, sockets are blocking:
     - recv() waits forever for data.
 With non-blocking:
     -accept() immediately returns if no client is connecting.
-    -recv() immediately returns if no data is available.
+    -recv()   immediately returns if no data is available.
 Perfect for servers handling multiple clients at once.
 
 ------------------------------------------------------------------

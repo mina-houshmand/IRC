@@ -1,4 +1,5 @@
-*This project has been created as part of the 42 curriculum by mhoushma@student.42vienna.com, oshcheho@student.42vienna.com*
+````
+*This project has been created as part of the 42 curriculum by mhoushma, oshcheho*
 
 # Description
 
@@ -10,7 +11,7 @@ ircserv is a C++ IRC server project. It handles client connections, authenticati
 
 ```bash
 make
-```
+````
 
 ## Execution
 
@@ -20,7 +21,7 @@ make
 ```
 
 The server runs on the given port and requires the matching password to register.
- 
+
 ## Commands usage
 
 After connecting with an IRC client, send the usual IRC lines:
@@ -50,11 +51,14 @@ Then answer with `1`, `2`, `3`, or `4`. After 10 questions, the bot shows the sc
 
 # Resources
 
-- RFC 1459 and RFC 2812 IRC documentation
-- irssi and Weechat user documentation
-- IRC command references and protocol examples
-- 42 project subject and evaluation guidelines
+* RFC 1459 and RFC 2812 IRC documentation
+* irssi and WeeChat user documentation
+* IRC command references and protocol examples
+* 42 project subject and evaluation guidelines
 
 ## AI usage
 
-AI was used to help structure the comments, implement the trivia bot questions and create testing scripts
+AI was used to help structure comments, implement the trivia bot questions, and create testing scripts.
+
+```
+```
