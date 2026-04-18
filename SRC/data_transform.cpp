@@ -1,4 +1,7 @@
 #include "../INC/Server.hpp"
+#include <iostream>
+#include <sstream>
+#include <stdexcept>
 
 void Server::processClientCommands(const std::string &buffer, int fd)
 {

@@ -246,7 +246,6 @@ void Channel::sendTo_all(std::string rpl1, int fd)
 		if (admins[i].GetFd() < 0)
 			continue;
 		std::cout << GREEN << "[sendTo_all]" << NC << " -> " << BLUE << "Admin FD:" << NC << " " << admins[i].GetFd() 
-		          << " | " << YELLOW << "Excluded FD:" << NC << " " << fd 
 		          << " | " << MAGENTA << "Sent:" << NC << " " << rpl1 << std::endl;
 		if(admins[i].GetFd() != fd)
 			if(send(admins[i].GetFd(), rpl1.c_str(), rpl1.size(),0) == -1)

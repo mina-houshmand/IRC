@@ -1,4 +1,6 @@
 #include "../INC/Server.hpp"
+#include <iostream>
+#include <sstream>
 
 bool Server::isBotfull = false;
 Server::Server(){

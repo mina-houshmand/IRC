@@ -1,5 +1,6 @@
 #include "../INC/Server.hpp"
 #include <iostream>
+#include <sstream>
 
 /*
 JOIN <channel>{,<channel>} [<key>{,<key>}]

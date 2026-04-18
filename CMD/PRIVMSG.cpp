@@ -1,4 +1,5 @@
 #include "../INC/Server.hpp"
+#include <sstream>
 
 /*
 -- Checks:
