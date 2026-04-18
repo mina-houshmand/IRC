@@ -60,6 +60,12 @@ bool Server::SplitPrivMsg(std::string cmd, std::vector<std::string> &targets, st
             message = ":" + m;
     }
 
+    // Clean up trailing CRLF from message
+    while (!message.empty() && (message[message.length() - 1] == '\r' || message[message.length() - 1] == '\n'))
+    {
+        message.erase(message.length() - 1);
+    }
+
     // Check if any valid targets remain
     if (targets.empty())
     {

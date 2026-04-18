@@ -137,8 +137,9 @@ void TriviaBot::SendTriviaQuestion(Server &server, int fd)
 
 	TriviaQuestion &q = triviaQuestions[qIndex];
 	int questionNumber = session.currentQuestion + 1;
+	int total = session.totalQuestions;
 
-	SendBotChannelMessage(server, "#trivia", "Question " + IntToString(questionNumber) + " of 10: " + q.question);
+	SendBotChannelMessage(server, "#trivia", "Question " + IntToString(questionNumber) + " of " + IntToString(total) + ": " + q.question);
 	SendBotChannelMessage(server, "#trivia", "1) " + q.choices[0]);
 	SendBotChannelMessage(server, "#trivia", "2) " + q.choices[1]);
 	SendBotChannelMessage(server, "#trivia", "3) " + q.choices[2]);
@@ -168,7 +169,7 @@ bool TriviaBot::ProcessMessage(Server &server, int fd, const std::string &target
 	for (size_t i = 0; i < text.size(); ++i)
 		text[i] = std::tolower(text[i]);
 
-	bool hasSession = (triviaSessions.find(fd) != triviaSessions.end() && triviaSessions[fd].inProgress);
+	bool hasSession = (triviaSessions.find(fd) != triviaSessions.end() && (triviaSessions[fd].inProgress || triviaSessions[fd].waitingForCount));
 
 	if (!hasSession)
 	{
@@ -180,9 +181,30 @@ bool TriviaBot::ProcessMessage(Server &server, int fd, const std::string &target
 
 		TriviaSession session;
 		session.fd = fd;
-		session.inProgress = true;
+		session.waitingForCount = true;
+		session.inProgress = false;
 		session.currentQuestion = 0;
 		session.score = 0;
+		session.totalQuestions = 10;
+		
+		triviaSessions[fd] = session;
+		SendBotChannelMessage(server, "#trivia", "Trivia started! How many questions would you like to answer? (1-10)");
+		return true;
+	}
+
+	if (triviaSessions[fd].waitingForCount)
+	{
+		int count = std::atoi(text.c_str());
+		if (count < 1 || count > 10)
+		{
+			SendBotChannelMessage(server, "#trivia", "Invalid number. Please enter a number between 1 and 10.", fd);
+			return true;
+		}
+
+		TriviaSession &session = triviaSessions[fd];
+		session.totalQuestions = count;
+		session.waitingForCount = false;
+		session.inProgress = true;
 
 		session.questionOrder.clear();
 		for (int i = 0; i < (int)triviaQuestions.size(); i++)
@@ -193,11 +215,10 @@ bool TriviaBot::ProcessMessage(Server &server, int fd, const std::string &target
 			std::swap(session.questionOrder[i], session.questionOrder[j]);
 		}
 
-		if (session.questionOrder.size() > 10)
-			session.questionOrder.resize(10);
+		if (session.questionOrder.size() > (size_t)session.totalQuestions)
+			session.questionOrder.resize(session.totalQuestions);
 
-		triviaSessions[fd] = session;
-		SendBotChannelMessage(server, "#trivia", "Trivia started! Answer by typing 1-4.");
+		SendBotChannelMessage(server, "#trivia", "Trivia started for " + IntToString(count) + " questions! Answer by typing 1-4.");
 		SendTriviaQuestion(server, fd);
 		return true;
 	}
@@ -224,10 +245,10 @@ bool TriviaBot::ProcessMessage(Server &server, int fd, const std::string &target
 	}
 
 	session.currentQuestion++;
-	if (session.currentQuestion >= 10)
+	if (session.currentQuestion >= session.totalQuestions)
 	{
-		SendBotChannelMessage(server, "#trivia", "Trivia over! Your score: " + IntToString(session.score) + " / 10");
-		SendBotChannelMessage(server, "#trivia", "To start again write start");
+		SendBotChannelMessage(server, "#trivia", "Trivia over! Your score: " + IntToString(session.score) + " / " + IntToString(session.totalQuestions));
+		SendBotChannelMessage(server, "#trivia", "To start again write PRIVMSG #trivia start");
 		EndTriviaSession(fd);
 		return true;
 	}

@@ -17,11 +17,13 @@ public:
 
 	struct TriviaSession {
 		int fd;
-		bool inProgress;
-		int currentQuestion;
-		int score;
-		std::vector<int> questionOrder;
-	};
+                bool waitingForCount;
+                bool inProgress;
+                int currentQuestion;
+                int totalQuestions;
+                int score;
+                std::vector<int> questionOrder;
+        };
 
 private:
 	bool enabled;
